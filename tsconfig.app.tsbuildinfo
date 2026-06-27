@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/utils/ai.ts","./src/utils/cookies.ts","./src/utils/equations.ts","./src/App.vue","./src/components/GameScreen.vue","./src/components/HelloWorld.vue","./src/components/MainMenu.vue","./src/components/PlayerArea.vue","./src/components/VirtualKeyboard.vue"],"version":"5.9.3"}
