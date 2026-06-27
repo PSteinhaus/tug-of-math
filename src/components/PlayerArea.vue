@@ -9,7 +9,7 @@
         <span
           v-for="(part, i) in equationParts"
           :key="i"
-          :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−', 'eq-sym': part === '=' }"
+          :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−' || part === '×' || part === '÷', 'eq-sym': part === '=' }"
         >{{ part }}</span>
       </div>
       <div class="input-display">
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import VirtualKeyboard from './VirtualKeyboard.vue'
-import { type Equation, formatEquation, generateEquation } from '../utils/equations'
+import { type Equation, type OperationType, formatEquation, generateEquation } from '../utils/equations'
 
 const props = defineProps<{
   rotated: boolean
@@ -39,6 +39,8 @@ const props = defineProps<{
   colorDark: string
   colorLight: string
   disabled: boolean
+  maxNumber: number
+  operation: OperationType
 }>()
 
 const emit = defineEmits<{
@@ -46,7 +48,7 @@ const emit = defineEmits<{
   wrong: []
 }>()
 
-const currentEq = ref<Equation>(generateEquation())
+const currentEq = ref<Equation>(generateEquation(props.maxNumber, props.operation))
 const inputValue = ref('')
 const flashState = ref<'none' | 'correct' | 'wrong'>('none')
 
@@ -56,7 +58,8 @@ const missingIndex = computed(() => equationData.value.missingIndex)
 
 function onDigit(d: string) {
   if (props.disabled) return
-  if (inputValue.value.length >= 2) return
+  const maxLen = props.maxNumber >= 100 ? 3 : 2
+  if (inputValue.value.length >= maxLen) return
   inputValue.value += d
 }
 
@@ -72,7 +75,7 @@ function evaluate() {
     triggerFlash('correct')
     emit('correct')
     setTimeout(() => {
-      currentEq.value = generateEquation()
+      currentEq.value = generateEquation(props.maxNumber, props.operation)
       inputValue.value = ''
     }, 400)
   } else {
@@ -103,7 +106,7 @@ function submitAnswer(answer: number) {
 }
 
 defineExpose({ getEquation, submitAnswer, reset() {
-  currentEq.value = generateEquation()
+  currentEq.value = generateEquation(props.maxNumber, props.operation)
   inputValue.value = ''
   flashState.value = 'none'
 } })

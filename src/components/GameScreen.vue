@@ -10,6 +10,8 @@
         :color-dark="props.p2Dark"
         :color-light="props.p2Light"
         :disabled="!!winner || props.mode === 'ai'"
+        :max-number="props.maxNumber"
+        :operation="props.operation"
         @correct="onP2Correct"
         @wrong="onP2Wrong"
       />
@@ -25,6 +27,8 @@
         :color-dark="props.p1Dark"
         :color-light="props.p1Light"
         :disabled="!!winner"
+        :max-number="props.maxNumber"
+        :operation="props.operation"
         @correct="onP1Correct"
         @wrong="onP1Wrong"
       />
@@ -66,7 +70,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import PlayerArea from './PlayerArea.vue'
 import { AI_LEVELS, getAiDelay, getAiAnswer } from '../utils/ai'
-import { unlockNextAiLevel } from '../utils/cookies'
+import { unlockNextAiLevel, type NumberRange } from '../utils/cookies'
+import type { OperationType } from '../utils/equations'
 
 const SHIFT_CORRECT = 12
 const SHIFT_WRONG   = 6
@@ -74,6 +79,9 @@ const SHIFT_WRONG   = 6
 const props = defineProps<{
   mode: 'versus' | 'ai'
   aiLevel?: number
+  range: NumberRange
+  maxNumber: number
+  operation: OperationType
   p1Color: string
   p1Dark: string
   p1Light: string
@@ -154,7 +162,7 @@ function shiftBalance(delta: number) {
     winner.value = 'p1'
     clearAiTimer()
     if (props.mode === 'ai' && props.aiLevel) {
-      unlockNextAiLevel(props.aiLevel)
+      unlockNextAiLevel(props.operation, props.range, props.aiLevel)
       emit('aiBeaten', props.aiLevel)
     }
   } else if (balance.value <= 0) {
@@ -182,7 +190,7 @@ function scheduleAiMove() {
   aiTimer = setTimeout(() => {
     if (winner.value || !p2Area.value) return
     const eq = p2Area.value.getEquation()
-    p2Area.value.submitAnswer(getAiAnswer(eq.answer, level.accuracy))
+    p2Area.value.submitAnswer(getAiAnswer(eq.answer, level.accuracy, props.maxNumber))
     if (!winner.value) scheduleAiMove()
   }, getAiDelay(level))
 }

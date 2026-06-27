@@ -1,16 +1,31 @@
 <template>
   <div class="app-root">
     <Transition name="screen">
+      <RangeMenu
+        v-if="screen === 'ranges'"
+        ref="rangeMenuRef"
+        :p1-color="p1Color"
+        :p1-light="p1Light"
+        :p2-color="p2Color"
+        :p2-light="p2Light"
+        @select="selectRange"
+      />
       <MainMenu
-        v-if="screen === 'menu'"
+        v-else-if="screen === 'menu'"
         ref="menuRef"
+        :range="selectedRange"
+        :operation="selectedOperation"
         @start-versus="startVersus"
         @start-ai="startAi"
+        @back="backToRanges"
       />
       <GameScreen
         v-else-if="screen === 'game'"
         :mode="gameMode"
         :ai-level="aiLevel ?? undefined"
+        :range="selectedRange"
+        :max-number="selectedRange"
+        :operation="selectedOperation"
         :p1-color="p1Color"
         :p1-dark="p1Dark"
         :p1-light="p1Light"
@@ -26,16 +41,22 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
+import RangeMenu from './components/RangeMenu.vue'
 import MainMenu from './components/MainMenu.vue'
 import GameScreen from './components/GameScreen.vue'
+import { type NumberRange } from './utils/cookies'
+import { type OperationType } from './utils/equations'
 
-type Screen = 'menu' | 'game'
+type Screen = 'ranges' | 'menu' | 'game'
 type GameMode = 'versus' | 'ai'
 
-const screen = ref<Screen>('menu')
+const screen = ref<Screen>('ranges')
 const gameMode = ref<GameMode>('versus')
 const aiLevel = ref<number | null>(null)
+const selectedRange = ref<NumberRange>(10)
+const selectedOperation = ref<OperationType>('addsub')
 const menuRef = ref<InstanceType<typeof MainMenu> | null>(null)
+const rangeMenuRef = ref<InstanceType<typeof RangeMenu> | null>(null)
 
 // Generate colors once on app start
 function hslToHex(h: number, s: number, l: number): string {
@@ -61,6 +82,12 @@ const p2Color = hslToHex(h2, 45, 50)
 const p2Dark  = hslToHex(h2, 50, 35)
 const p2Light = hslToHex(h2, 40, 65)
 
+function selectRange(op: OperationType, r: NumberRange) {
+  selectedOperation.value = op
+  selectedRange.value = r
+  screen.value = 'menu'
+}
+
 function startVersus() {
   gameMode.value = 'versus'
   aiLevel.value = null
@@ -75,9 +102,14 @@ function startAi(level: number) {
 
 async function goBack() {
   screen.value = 'menu'
-  // Wait for MainMenu to mount before calling refresh
   await nextTick()
   menuRef.value?.refresh()
+}
+
+async function backToRanges() {
+  screen.value = 'ranges'
+  await nextTick()
+  rangeMenuRef.value?.refresh()
 }
 
 function onAiBeaten(_level: number) {
