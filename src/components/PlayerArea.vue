@@ -146,7 +146,7 @@ defineExpose({ getEquation, submitAnswer, reset() {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(14px, 4.1vh, 48px);
+  font-size: clamp(14px, 3.7vh, 48px);
   font-weight: 600;
   color: rgba(255,255,255,0.95);
   flex-wrap: wrap;

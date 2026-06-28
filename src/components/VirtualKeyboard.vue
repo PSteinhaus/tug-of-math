@@ -194,8 +194,8 @@ function release(e: PointerEvent) {
 }
 
 .action svg {
-  width: clamp(18px, 4.5vw, 24px);
-  height: clamp(18px, 4.5vw, 24px);
+  width: clamp(18px, 4.5vh, 24px);
+  height: clamp(18px, 4.5vh, 24px);
 }
 
 .action.pressed {
