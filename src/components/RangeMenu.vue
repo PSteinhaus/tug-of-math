@@ -261,7 +261,7 @@ function animateLights() {
     justify-content: center;
     padding: 24px 16px;
     box-sizing: border-box;
-    overflow: hidden; 
+    overflow: scroll;
   }
   
   .menu-content {

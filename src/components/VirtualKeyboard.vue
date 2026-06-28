@@ -152,10 +152,10 @@ function release(e: PointerEvent) {
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: clamp(16px, 4vw, 22px);
+  font-size: clamp(14px, 5vh, 22px);
   font-weight: 500;
   padding: 0;
-  height: clamp(44px, 10vw, 58px);
+  height: clamp(32px, 7vh, 58px);
 
   display: flex;
   align-items: center;

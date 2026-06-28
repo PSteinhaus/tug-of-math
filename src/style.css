@@ -16,3 +16,7 @@
     height: 100%;
   }
   
+  .menu-content {
+    min-height: fit-content;
+    max-height: 100%;
+  }

@@ -12,10 +12,10 @@
           :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−' || part === '×' || part === '÷', 'eq-sym': part === '=' }"
         >{{ part }}</span>
       </div>
-      <div class="input-display">
+      <!-- <div class="input-display">
         <span v-if="inputValue">{{ inputValue }}</span>
         <span v-else class="placeholder">?</span>
-      </div>
+      </div> -->
     </div>
     <VirtualKeyboard
       :key-bg="colorLight"
@@ -134,16 +134,19 @@ defineExpose({ getEquation, submitAnswer, reset() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  margin-top: calc(12px + 3.4vh);
   width: 100%;
+  height: 100%;
 }
 
 .equation {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: clamp(22px, 6vw, 34px);
+  font-size: clamp(14px, 4.1vh, 48px);
   font-weight: 600;
   color: rgba(255,255,255,0.95);
   flex-wrap: wrap;
@@ -180,7 +183,7 @@ defineExpose({ getEquation, submitAnswer, reset() {
 }
 
 .input-display {
-  font-size: clamp(24px, 7vw, 40px);
+  font-size: clamp(24px, 4vh, 40px);
   font-weight: 700;
   color: white;
   min-height: 1.2em;
@@ -197,15 +200,49 @@ defineExpose({ getEquation, submitAnswer, reset() {
 
 /* Flash animations */
 @keyframes flashCorrect {
-  0% { background: rgba(255,255,255,0); }
-  30% { background: rgba(255,255,255,0.25); }
-  100% { background: rgba(255,255,255,0); }
+  0% {
+    background: rgba(255,255,255,0);
+    box-shadow:
+      inset 0 0 0 rgba(255,255,255,0),
+      0 0 0 rgba(255,255,255,0);
+  }
+
+  30% {
+    background: rgba(255,255,255,0.15);
+    box-shadow:
+      inset 0 0 80px rgba(255,255,255,0.12),
+      0 0 90px rgba(255,255,255,0.45);
+  }
+
+  100% {
+    background: rgba(255,255,255,0);
+    box-shadow:
+      inset 0 0 0 rgba(255,255,255,0),
+      0 0 0 rgba(255,255,255,0);
+  }
 }
 
 @keyframes flashWrong {
-  0% { background: rgba(0,0,0,0); }
-  30% { background: rgba(0,0,0,0.2); }
-  100% { background: rgba(0,0,0,0); }
+  0% {
+    background: rgba(0,0,0,0);
+    box-shadow:
+      inset 0 0 0 rgba(0,0,0,0),
+      0 0 0 rgba(0,0,0,0);
+  }
+
+  30% {
+    background: rgba(0,0,0,0.12);
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.10),
+      0 0 90px rgba(0,0,0,0.35);
+  }
+
+  100% {
+    background: rgba(0,0,0,0);
+    box-shadow:
+      inset 0 0 0 rgba(0,0,0,0),
+      0 0 0 rgba(0,0,0,0);
+  }
 }
 
 .flash-correct {

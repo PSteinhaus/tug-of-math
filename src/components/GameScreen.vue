@@ -3,35 +3,39 @@
     <div class="balance-bg" :style="bgStyle" />
 
     <div class="player-slot top">
-      <PlayerArea
-        ref="p2Area"
-        :rotated="true"
-        :color="props.p2Color"
-        :color-dark="props.p2Dark"
-        :color-light="props.p2Light"
-        :disabled="!!winner || props.mode === 'ai'"
-        :max-number="props.maxNumber"
-        :operation="props.operation"
-        @correct="onP2Correct"
-        @wrong="onP2Wrong"
-      />
+      <div class="player-wrapper">
+        <PlayerArea
+          ref="p2Area"
+          :rotated="true"
+          :color="props.p2Color"
+          :color-dark="props.p2Dark"
+          :color-light="props.p2Light"
+          :disabled="!!winner || props.mode === 'ai'"
+          :max-number="props.maxNumber"
+          :operation="props.operation"
+          @correct="onP2Correct"
+          @wrong="onP2Wrong"
+        />
+      </div>
     </div>
 
     <div class="divider-line" />
 
     <div class="player-slot bottom">
-      <PlayerArea
-        ref="p1Area"
-        :rotated="false"
-        :color="props.p1Color"
-        :color-dark="props.p1Dark"
-        :color-light="props.p1Light"
-        :disabled="!!winner"
-        :max-number="props.maxNumber"
-        :operation="props.operation"
-        @correct="onP1Correct"
-        @wrong="onP1Wrong"
-      />
+      <div class="player-wrapper">
+        <PlayerArea
+          ref="p1Area"
+          :rotated="false"
+          :color="props.p1Color"
+          :color-dark="props.p1Dark"
+          :color-light="props.p1Light"
+          :disabled="!!winner"
+          :max-number="props.maxNumber"
+          :operation="props.operation"
+          @correct="onP1Correct"
+          @wrong="onP1Wrong"
+        />
+      </div>
     </div>
 
     <button class="back-btn" @click="confirmVisible = true" title="Beenden">
@@ -226,9 +230,24 @@ onUnmounted(() => {
   z-index: 1;
   flex: 1;
   min-height: 0;
+  max-height: 100%;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  flex-direction: row;
+}
+
+.player-wrapper {
+  height: 100%;
+  width: min(100%, 700px);
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  display: flex;
+}
+
+.player-wrapper > * {
+  flex: 1;
 }
 
 .divider-line {
