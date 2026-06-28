@@ -13,6 +13,7 @@
           :disabled="!!winner || props.mode === 'ai'"
           :max-number="props.maxNumber"
           :operation="props.operation"
+          :player="'2'"
           @correct="onP2Correct"
           @wrong="onP2Wrong"
         />
@@ -32,6 +33,7 @@
           :disabled="!!winner"
           :max-number="props.maxNumber"
           :operation="props.operation"
+          :player="'1'"
           @correct="onP1Correct"
           @wrong="onP1Wrong"
         />
@@ -59,7 +61,7 @@
     </Transition>
 
     <Transition name="fade">
-      <div v-if="winner" class="winner-overlay" @click="emit('back')">
+      <div v-if="winner" class="winner-overlay" @click="winnerClickable && emit('back')">
         <div class="winner-card">
           <div class="winner-label">{{ winnerName }}</div>
           <div class="winner-sub">gewinnt!</div>
@@ -76,6 +78,7 @@ import PlayerArea from './PlayerArea.vue'
 import { AI_LEVELS, getAiDelay, getAiAnswer } from '../utils/ai'
 import { unlockNextAiLevel, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
+import { playWin } from "../utils/sound"
 
 const SHIFT_CORRECT = 12
 const SHIFT_WRONG   = 6
@@ -111,6 +114,7 @@ const balance = ref(50)
 const animatedBalance = ref(50)
 const winner = ref<null | 'p1' | 'p2'>(null)
 const confirmVisible = ref(false)
+const winnerClickable = ref(false)
 
 const winnerName = computed(() => winner.value === 'p1' ? player1Name : player2Name.value)
 
@@ -163,16 +167,28 @@ function shiftBalance(delta: number) {
   balance.value = next
   animateBalance(next)
   if (balance.value >= 100) {
-    winner.value = 'p1'
+    playWin()
+    setWinner('p1')
     clearAiTimer()
     if (props.mode === 'ai' && props.aiLevel) {
       unlockNextAiLevel(props.operation, props.range, props.aiLevel)
       emit('aiBeaten', props.aiLevel)
     }
   } else if (balance.value <= 0) {
-    winner.value = 'p2'
+    if (props.mode === "versus") { playWin() }
+    setWinner('p2')
     clearAiTimer()
   }
+}
+
+function setWinner(player: null | 'p1' | 'p2') {
+  winner.value = player
+  // build in a little delay so that the modal doesn't get removed by accident
+  winnerClickable.value = false
+
+  setTimeout(() => {
+    winnerClickable.value = true
+  }, 100)
 }
 
 function onP1Correct() { shiftBalance(+SHIFT_CORRECT) }

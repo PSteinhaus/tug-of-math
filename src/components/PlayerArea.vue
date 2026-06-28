@@ -32,6 +32,7 @@
 import { ref, computed } from 'vue'
 import VirtualKeyboard from './VirtualKeyboard.vue'
 import { type Equation, type OperationType, formatEquation, generateEquation } from '../utils/equations'
+import { playCorrect, playCorrect2 } from "../utils/sound"
 
 const props = defineProps<{
   rotated: boolean
@@ -41,6 +42,7 @@ const props = defineProps<{
   disabled: boolean
   maxNumber: number
   operation: OperationType
+  player: string
 }>()
 
 const emit = defineEmits<{
@@ -72,6 +74,10 @@ function evaluate() {
   if (inputValue.value === '') return
   const guess = parseInt(inputValue.value, 10)
   if (guess === currentEq.value.answer) {
+    if (props.player === "1")
+      playCorrect()
+    else if (props.player === "2" && !props.disabled)
+      playCorrect2()
     triggerFlash('correct')
     emit('correct')
     setTimeout(() => {
