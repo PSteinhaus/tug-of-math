@@ -21,10 +21,10 @@
       <div class="section-label">Gegen KI</div>
       <div
         class="ai-list"
-        :class="{ mastered: unlockedLevels > AI_LEVELS.length }"
+        :class="{ mastered: unlockedLevels > aiLevels.length }"
       >
         <button
-          v-for="level in AI_LEVELS"
+          v-for="level in aiLevels"
           :key="level.id"
           class="menu-btn ai-btn"
           :class="{
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { AI_LEVELS } from '../utils/ai'
+import { generateAiLevels } from '../utils/ai'
 import { getUnlockedAiLevels, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
 
@@ -63,6 +63,7 @@ const emit = defineEmits<{
 }>()
 
 const unlockedLevels = ref(1)
+const aiLevels = generateAiLevels(props.range, props.operation)
 
 onMounted(() => {
   unlockedLevels.value = getUnlockedAiLevels(props.operation, props.range)

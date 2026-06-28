@@ -1,5 +1,5 @@
-import correctUrl from "../assets/sounds/woosh_heightened.ogg"
-import correct2Url from "../assets/sounds/woosh.ogg"
+import correctUrl from "../assets/sounds/woosh.ogg"
+import correct2Url from "../assets/sounds/woosh_heightened.ogg"
 import winUrl from "../assets/sounds/kaselmeyk_level-up.ogg"
 
 const correct = new Audio(correctUrl)

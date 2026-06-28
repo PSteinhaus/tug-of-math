@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import PlayerArea from './PlayerArea.vue'
-import { AI_LEVELS, getAiDelay, getAiAnswer } from '../utils/ai'
+import { aiLevel, getAiDelay, getAiAnswer } from '../utils/ai'
 import { unlockNextAiLevel, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
 import { playWin } from "../utils/sound"
@@ -105,7 +105,7 @@ const emit = defineEmits<{
 const player1Name = 'Spieler 1'
 const player2Name = computed(() => {
   if (props.mode === 'ai' && props.aiLevel) {
-    return AI_LEVELS[props.aiLevel - 1]?.name ?? 'KI'
+    return aiLevel(props.aiLevel, props.range, props.operation)?.name ?? 'KI'
   }
   return 'Spieler 2'
 })
@@ -205,7 +205,7 @@ function clearAiTimer() {
 
 function scheduleAiMove() {
   if (!props.aiLevel || props.mode !== 'ai' || winner.value) return
-  const level = AI_LEVELS[props.aiLevel - 1]
+  const level = aiLevel(props.aiLevel, props.range, props.operation)
   if (!level) return
   aiTimer = setTimeout(() => {
     if (winner.value || !p2Area.value) return

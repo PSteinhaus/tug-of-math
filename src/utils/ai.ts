@@ -1,21 +1,32 @@
+import { NumberRange } from "./cookies"
+import { OperationType } from "./equations"
+
 export interface AiLevel {
   id: number
   name: string
-  minDelay: number // ms
-  maxDelay: number // ms
+  solveTime: number // ms
+  timingJitter: number // ms
   accuracy: number // 0-1
 }
 
-export const AI_LEVELS: AiLevel[] = [
-  { id: 1, name: 'Anfänger',        minDelay: 12000, maxDelay: 18000, accuracy: 0.60 },
-  { id: 2, name: 'Fortgeschritten', minDelay: 8000,  maxDelay: 13000, accuracy: 0.78 },
-  { id: 3, name: 'Erfahren',        minDelay: 4500,  maxDelay: 8000,  accuracy: 0.93 },
-  { id: 4, name: 'Meister',         minDelay: 2500,  maxDelay: 6500,  accuracy: 0.96 },
-  { id: 5, name: 'Großmeister',      minDelay: 2200,  maxDelay: 4800,  accuracy: 1. },
+interface DifficultyConfig {
+  slowSolveTime: number
+  fastSolveTime: number
+
+  easyAccuracy: number
+  hardAccuracy: number
+}
+
+const AI_LEVEL_NAMES: string[] = [
+  'Anfänger',
+  'Fortgeschritten',
+  'Erfahren',
+  'Meister',
+  'Großmeister'
 ]
 
 export function getAiDelay(level: AiLevel): number {
-  return Math.floor(Math.random() * (level.maxDelay - level.minDelay + 1)) + level.minDelay
+  return Math.floor(level.solveTime + (Math.random() * 2 - 1) * level.timingJitter)
 }
 
 export function getAiAnswer(correctAnswer: number, accuracy: number, maxNumber: number = 20): number {
@@ -26,4 +37,124 @@ export function getAiAnswer(correctAnswer: number, accuracy: number, maxNumber: 
     if (i !== correctAnswer) wrong.push(i)
   }
   return wrong[Math.floor(Math.random() * wrong.length)]
+}
+
+function powerCurve(
+  level: number,
+  maxLevel: number,
+  exponent = 0.5
+): number {
+  const x = (level - 1) / (maxLevel - 1)
+  return Math.pow(x, exponent)
+}
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t
+}
+
+export function aiLevel(level: number, numberRange: NumberRange, operation: OperationType) {
+  let config = getConfig(numberRange, operation)
+  return createAiLevel(level, 5, config)
+}
+
+function getConfig(
+  numberRange: NumberRange,
+  operation: OperationType
+): DifficultyConfig {
+  const config = AI_CONFIG[operation][numberRange]
+
+  if (!config) {
+    throw new Error(
+      `No AI config defined for operation "${operation}" and number range ${numberRange}.`
+    )
+  }
+
+  return config
+}
+
+function createAiLevel(
+  level: number,
+  maxLevel: number,
+  config: DifficultyConfig
+): AiLevel {
+  const t = powerCurve(level, maxLevel)
+  console.log("t: "+t)
+  let solveTime = lerp(
+    config.slowSolveTime,
+    config.fastSolveTime,
+    t
+  )
+  console.log("solveTime: "+solveTime)
+
+  return {
+      id: level,
+      name: AI_LEVEL_NAMES[level -1],
+      solveTime,
+      timingJitter: solveTime / 2,
+      accuracy: lerp(
+          config.easyAccuracy,
+          config.hardAccuracy,
+          t
+      ),
+  }
+}
+
+const AI_CONFIG: Record<
+    OperationType,
+    Record<number, DifficultyConfig>
+> = {
+    addsub: {
+        10: {
+            slowSolveTime: 10000,
+            fastSolveTime: 2600,
+            easyAccuracy: 0.77,
+            hardAccuracy: 1.00,
+        },
+
+        20: {
+            slowSolveTime: 12500,
+            fastSolveTime: 2800,
+            easyAccuracy: 0.77,
+            hardAccuracy: 1.00,
+        },
+
+        100: {
+            slowSolveTime: 18500,
+            fastSolveTime: 6400,
+            easyAccuracy: 0.70,
+            hardAccuracy: 0.97,
+        },
+    },
+
+    muldiv: {
+        10: {
+            slowSolveTime: 9000,
+            fastSolveTime: 2600,
+            easyAccuracy: 0.80,
+            hardAccuracy: 1.00,
+        },
+
+        20: {
+            slowSolveTime: 14500,
+            fastSolveTime: 2900,
+            easyAccuracy: 0.76,
+            hardAccuracy: 0.99,
+        },
+
+        100: {
+            slowSolveTime: 14000,
+            fastSolveTime: 2900,
+            easyAccuracy: 0.77,
+            hardAccuracy: 0.99,
+        },
+    },
+}
+
+export function generateAiLevels(
+  numberRange: NumberRange,
+  operation: OperationType
+): AiLevel[] {
+  return AI_LEVEL_NAMES.map((_, index) =>
+    aiLevel(index + 1, numberRange, operation)
+  )
 }
