@@ -100,6 +100,7 @@ defineExpose({ refresh })
   padding: 24px 16px;
   box-sizing: border-box;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .menu-content {
@@ -245,14 +246,14 @@ defineExpose({ refresh })
       120deg,
       transparent 0%,
       rgba(255,255,255,.15) 20%,
-      rgba(255,255,255,.45) 35%,
+      rgba(255,255,255,.89) 35%,
       rgba(255,255,255,.15) 50%,
       transparent 70%
     );
 
   background-size: 250% 100%;
-  animation: sweep 12s linear infinite;
-  filter: blur(22px);
+  animation: sweep 17s linear infinite;
+  filter: blur(12px);
 }
 
 .ai-list.mastered .ai-btn {
@@ -300,13 +301,13 @@ defineExpose({ refresh })
     background:
         radial-gradient(
             circle at 72% 35%,
-            color-mix(in srgb, white 45%, var(--glow)) 0%,
+            color-mix(in srgb, white 65%, var(--glow)) 0%,
             color-mix(in srgb, white 10%, var(--glow)) 12%,
             color-mix(in srgb, transparent 70%, var(--glow)) 28%,
             transparent 60%
         );
 
-    opacity: .60;
+    opacity: .97;
     mix-blend-mode: screen;
     filter: blur(10px);
 
@@ -373,16 +374,16 @@ defineExpose({ refresh })
         transform: rotate(360deg);
     }
 
-}
-
+    
+  }
 @keyframes sweep {
 
     from{
-        background-position:-180% 0;
+        background-position:-250% 0;
     }
 
     to{
-        background-position:180% 0;
+        background-position:250% 0;
     }
 }
 
@@ -404,7 +405,7 @@ defineExpose({ refresh })
             #6aaa78
         );
 
-    background-size:300% 100%;
+    background-size:400% 150%;
     filter:blur(40px);
     opacity:.35;
 
@@ -414,7 +415,7 @@ defineExpose({ refresh })
 
 @keyframes rainbowFlow{
     from{ background-position:0% 50%; }
-    to{ background-position:300% 50%; }
+    to{ background-position:400% 50%; }
 }
 
 </style>

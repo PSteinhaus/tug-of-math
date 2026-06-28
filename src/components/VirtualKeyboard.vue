@@ -1,31 +1,69 @@
 <template>
-  <div class="keyboard" :style="{ '--key-bg': keyBg, '--key-active': keyActive, '--action-bg': actionBg }">
-    <div class="key-row">
-      <button class="key digit" @click="emit('digit', '1')">1</button>
-      <button class="key digit" @click="emit('digit', '2')">2</button>
-      <button class="key digit" @click="emit('digit', '3')">3</button>
+  <div
+    class="keyboard"
+    :style="{
+      '--key-bg': keyBg,
+      '--key-active': keyActive,
+      '--action-bg': actionBg,
+    }"
+  >
+    <div
+      class="key-row"
+      v-for="row in digitRows"
+      :key="row.join('')"
+    >
+      <button
+        v-for="digit in row"
+        :key="digit"
+        class="key digit"
+        :class="{ pressed: pressed.has(digit) }"
+        @pointerdown.prevent="press($event, digit)"
+        @pointerup="release($event)"
+        @pointercancel="release($event)"
+        @pointerleave="release($event)"
+      >
+        {{ digit }}
+      </button>
     </div>
+
     <div class="key-row">
-      <button class="key digit" @click="emit('digit', '4')">4</button>
-      <button class="key digit" @click="emit('digit', '5')">5</button>
-      <button class="key digit" @click="emit('digit', '6')">6</button>
-    </div>
-    <div class="key-row">
-      <button class="key digit" @click="emit('digit', '7')">7</button>
-      <button class="key digit" @click="emit('digit', '8')">8</button>
-      <button class="key digit" @click="emit('digit', '9')">9</button>
-    </div>
-    <div class="key-row">
-      <button class="key action backspace" @click="emit('backspace')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <button
+        class="key action backspace"
+        :class="{ pressed: pressed.has('backspace') }"
+        @pointerdown.prevent="press($event, 'backspace')"
+        @pointerup="release($event)"
+        @pointercancel="release($event)"
+        @pointerleave="release($event)"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
           <line x1="18" y1="9" x2="14" y2="13"/>
           <line x1="14" y1="9" x2="18" y2="13"/>
         </svg>
       </button>
-      <button class="key digit" @click="emit('digit', '0')">0</button>
-      <button class="key action submit" @click="emit('submit')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+
+      <button
+        class="key digit"
+        :class="{ pressed: pressed.has('0') }"
+        @pointerdown.prevent="press($event, '0')"
+        @pointerup="release($event)"
+        @pointercancel="release($event)"
+        @pointerleave="release($event)"
+      >
+        0
+      </button>
+
+      <button
+        class="key action submit"
+        :class="{ pressed: pressed.has('submit') }"
+        @pointerdown.prevent="press($event, 'submit')"
+        @pointerup="release($event)"
+        @pointercancel="release($event)"
+        @pointerleave="release($event)"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </button>
@@ -34,6 +72,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue"
+
 defineProps<{
   keyBg: string
   keyActive: string
@@ -45,6 +85,51 @@ const emit = defineEmits<{
   backspace: []
   submit: []
 }>()
+
+const digitRows = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+]
+
+const pressed = ref(new Set<string>())
+
+/**
+ * Maps pointerId -> key.
+ * Allows multiple simultaneous touches without interfering.
+ */
+const activePointers = new Map<number, string>()
+
+function press(e: PointerEvent, key: string) {
+  activePointers.set(e.pointerId, key)
+  pressed.value.add(key)
+
+  switch (key) {
+    case "submit":
+      emit("submit")
+      break
+
+    case "backspace":
+      emit("backspace")
+      break
+
+    default:
+      emit("digit", key)
+      break
+  }
+
+  ;(e.currentTarget as HTMLElement)?.setPointerCapture?.(e.pointerId)
+}
+
+function release(e: PointerEvent) {
+  const key = activePointers.get(e.pointerId)
+  if (!key) return
+
+  pressed.value.delete(key)
+  activePointers.delete(e.pointerId)
+
+  ;(e.currentTarget as HTMLElement)?.releasePointerCapture?.(e.pointerId)
+}
 </script>
 
 <style scoped>
@@ -71,18 +156,27 @@ const emit = defineEmits<{
   font-weight: 500;
   padding: 0;
   height: clamp(44px, 10vw, 58px);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.1s, transform 0.1s;
+
+  transition:
+    transform 0.08s ease,
+    opacity 0.08s ease,
+    background-color 0.08s ease;
+
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+
+  touch-action: none;
 }
 
-.key:active {
-  opacity: 0.7;
+.key.pressed {
   transform: scale(0.94);
+  opacity: 0.75;
 }
 
 .digit {
@@ -90,22 +184,21 @@ const emit = defineEmits<{
   color: white;
 }
 
+.digit.pressed {
+  background: var(--key-active);
+}
+
 .action {
   background: var(--action-bg);
+  color: white;
 }
 
 .action svg {
   width: clamp(18px, 4.5vw, 24px);
   height: clamp(18px, 4.5vw, 24px);
-  color: white;
 }
 
-.submit {
-  background: var(--action-bg);
-  opacity: 0.85;
-}
-
-.submit:active, .backspace:active {
-  opacity: 0.6;
+.action.pressed {
+  opacity: 0.65;
 }
 </style>

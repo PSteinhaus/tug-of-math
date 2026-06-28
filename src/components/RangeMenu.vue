@@ -8,13 +8,15 @@
             '--p2-light': props.p2Light,
         }"
     >
-      <div
-        v-for="light in lights"
-        :key="light.id"
-        class="ambient-light"
-        :class="light.team"
-        :style="light.style"
-      ></div>
+      <div class="light-layer">
+        <div
+          v-for="light in lights"
+          :key="light.id"
+          class="ambient-light"
+          :class="light.team"
+          :style="light.style"
+        ></div>
+      </div>
       <div class="menu-content">
         <h1 class="title">Tauziehen</h1>
         <p class="subtitle">Wähle deinen Zahlenraum</p>
@@ -252,12 +254,14 @@ function animateLights() {
   .range-menu {
     position: fixed;
     inset: 0;
+    isolation: isolate;
     background: #f5f0eb;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
     box-sizing: border-box;
+    overflow: hidden; 
   }
   
   .menu-content {
@@ -398,6 +402,13 @@ function animateLights() {
     line-height: 1.4;
     padding: 0 8px;
   }
+
+.light-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
 
 .ambient-light{
     position:absolute;
