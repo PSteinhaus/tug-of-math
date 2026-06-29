@@ -21,7 +21,7 @@
       <div class="section-label">Gegen KI</div>
       <div
         class="ai-list"
-        :class="{ mastered: unlockedLevels > aiLevels.length }"
+        :class="{ 'mastered': unlockedLevels > aiLevels.length, 'semi-mastered': unlockedLevels == aiLevels.length }"
       >
         <button
           v-for="level in aiLevels"
@@ -231,7 +231,7 @@ defineExpose({ refresh })
   font-weight: 700;
 }
 
-.ai-list.mastered {
+.ai-list.mastered, .ai-list.semi-mastered {
   position: relative;
 }
 
@@ -257,7 +257,8 @@ defineExpose({ refresh })
   filter: blur(12px);
 }
 
-.ai-list.mastered .ai-btn {
+.ai-list.mastered .ai-btn,
+.ai-list.semi-mastered .ai-btn:not(:last-child) {
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -268,8 +269,19 @@ defineExpose({ refresh })
       glowPulse 12s ease-in-out infinite;
 }
 
+.ai-list.mastered .ai-btn {
+  animation:
+      glowPulse 12s ease-in-out infinite;
+}
+
+.ai-list.semi-mastered .ai-btn:not(:last-child) {
+  animation:
+      glowPulseLarge 12s ease-in-out infinite;
+}
+
 /* colored glow */
-.ai-list.mastered .ai-btn::before {
+.ai-list.mastered .ai-btn::before,
+.ai-list.semi-mastered .ai-btn:not(:last-child):before {
   content: "";
   position: absolute;
   inset: -2px;
@@ -352,6 +364,24 @@ defineExpose({ refresh })
     }
 }
 
+
+@keyframes glowPulseLarge {
+
+0%,100%{
+    transform:translateY(0);
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.08),
+        0 0 8px color-mix(in srgb, var(--glow) 45%, transparent);
+}
+
+50%{
+    transform:translateY(-1px);
+    box-shadow:
+        0 4px 10px rgba(0,0,0,.12),
+        0 0 24px color-mix(in srgb, var(--glow) 80%, transparent);
+}
+}
+
 @keyframes aura {
 
     0%,100%{
@@ -388,7 +418,7 @@ defineExpose({ refresh })
     }
 }
 
-.ai-list.mastered::after{
+.ai-list.mastered::after {
     content:"";
     position:absolute;
     inset:-30px;
