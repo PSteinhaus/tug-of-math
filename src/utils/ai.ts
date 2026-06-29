@@ -42,7 +42,7 @@ export function getAiAnswer(correctAnswer: number, accuracy: number, maxNumber: 
 function powerCurve(
   level: number,
   maxLevel: number,
-  exponent = 0.5
+  exponent = 0.9
 ): number {
   const x = (level - 1) / (maxLevel - 1)
   return Math.pow(x, exponent)
@@ -105,21 +105,21 @@ const AI_CONFIG: Record<
 > = {
     addsub: {
         10: {
-            slowSolveTime: 10000,
+            slowSolveTime: 14000,
             fastSolveTime: 2600,
-            easyAccuracy: 0.77,
+            easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         20: {
-            slowSolveTime: 12500,
+            slowSolveTime: 14500,
             fastSolveTime: 2800,
-            easyAccuracy: 0.77,
+            easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         100: {
-            slowSolveTime: 18500,
+            slowSolveTime: 24500,
             fastSolveTime: 6400,
             easyAccuracy: 0.70,
             hardAccuracy: 0.97,
@@ -128,7 +128,7 @@ const AI_CONFIG: Record<
 
     muldiv: {
         10: {
-            slowSolveTime: 9000,
+            slowSolveTime: 14000,
             fastSolveTime: 2600,
             easyAccuracy: 0.80,
             hardAccuracy: 1.00,
