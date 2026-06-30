@@ -1,46 +1,55 @@
 <template>
   <div class="main-menu">
     <div class="menu-content">
-      <button class="back-link" @click="emit('back')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        <span>Zurück</span>
-      </button>
-
-      <h1 class="title">Zahlen bis {{ range }}</h1>
-      <p class="subtitle">{{ operationLabel }}</p>
-
-      <div class="section-label">Zwei Spieler</div>
-      <button class="menu-btn versus" @click="emit('startVersus')">
-        <span class="btn-icon">⚔</span>
-        <span>Duell-Modus</span>
-      </button>
-
-      <div class="section-label">Gegen KI</div>
-      <div
-        class="ai-list"
-        :class="{ 'mastered': unlockedLevels > aiLevels.length, 'semi-mastered': unlockedLevels == aiLevels.length }"
-      >
-        <button
-          v-for="level in aiLevels"
-          :key="level.id"
-          class="menu-btn ai-btn"
-          :class="{
-              locked: level.id > unlockedLevels,
-              beaten: level.id < unlockedLevels
-          }"
-          :style="{ '--glow': difficultyColor(level.id) }"
-          :disabled="level.id > unlockedLevels"
-          @click="startAi(level.id)"
-        >
-          <span class="difficulty-dot" :style="{ background: difficultyColor(level.id) }" />
-          <span class="ai-name">{{ level.name }}</span>
-          <span class="lock-icon" v-if="level.id > unlockedLevels">🔒</span>
-          <span class="check-icon" v-else-if="level.id < unlockedLevels">✓</span>
+      <div class="menu-column">
+        <button class="back-link" @click="emit('back')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Zurück</span>
         </button>
+
+        <h1 class="title">Zahlen bis {{ range }}</h1>
+        <p class="subtitle">{{ operationLabel }}</p>
+
+        <div class="section-label">Zwei Spieler</div>
+        <button class="menu-btn versus" @click="emit('startVersus')">
+          <span class="btn-icon">⚔</span>
+          <span>Duell-Modus</span>
+        </button>
+
+        <div class="section-label">Gegen KI</div>
+
+        <div
+          class="ai-list"
+          :class="{ 'mastered': unlockedLevels > aiLevels.length, 'semi-mastered': unlockedLevels == aiLevels.length }"
+        >
+          <button
+            v-for="level in aiLevels"
+            :key="level.id"
+            class="menu-btn ai-btn"
+            :class="{
+                locked: level.id > unlockedLevels,
+                beaten: level.id < unlockedLevels
+            }"
+            :style="{ '--glow': difficultyColor(level.id) }"
+            :disabled="level.id > unlockedLevels"
+            @click="startAi(level.id)"
+          >
+            <span class="difficulty-dot" :style="{ background: difficultyColor(level.id) }" />
+            <span class="ai-name">{{ level.name }}</span>
+            <span class="lock-icon" v-if="level.id > unlockedLevels">🔒</span>
+            <span class="check-icon" v-else-if="level.id < unlockedLevels">✓</span>
+          </button>
+        </div>
       </div>
+
+      <PerformanceGraph
+        class="performance"
+        :range="props.range"
+        :operation="props.operation"
+      />
     </div>
   </div>
 </template>
@@ -50,6 +59,7 @@ import { ref, computed, onMounted } from 'vue'
 import { generateAiLevels } from '../utils/ai'
 import { getUnlockedAiLevels, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
+import PerformanceGraph from './PerformanceGraph.vue';
 
 const props = defineProps<{
   range: NumberRange
@@ -88,6 +98,7 @@ function refresh() {
 }
 
 defineExpose({ refresh })
+
 </script>
 
 <style scoped>
@@ -106,11 +117,24 @@ defineExpose({ refresh })
 
 .menu-content {
   width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.menu-column {
+  width: 100%;
   max-width: 360px;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 10px;
+}
+
+.performance {
+  width: 100%;
+  max-width: 720px;
 }
 
 .back-link {

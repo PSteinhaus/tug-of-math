@@ -25,6 +25,11 @@ const AI_LEVEL_NAMES: string[] = [
   'Großmeister'
 ]
 
+export function difficultyColor(id: number): string {
+  const colors = ['#6aaa78', '#c5a34a', '#e08040', '#d05050', '#8040c0']
+  return colors[id - 1] ?? '#aaa'
+}
+
 export function getAiDelay(level: AiLevel): number {
   return Math.floor(level.solveTime + (Math.random() * 2 - 1) * level.timingJitter)
 }

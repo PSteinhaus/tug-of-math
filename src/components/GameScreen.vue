@@ -79,6 +79,7 @@ import { aiLevel, getAiDelay, getAiAnswer } from '../utils/ai'
 import { unlockNextAiLevel, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
 import { playWin } from "../utils/sound"
+import { MatchStats, savePerformance } from '../utils/performance'
 
 const SHIFT_CORRECT = 12
 const SHIFT_WRONG   = 6
@@ -128,6 +129,15 @@ const bgStyle = computed(() => {
   }
 })
 
+let stats: MatchStats = {
+  correct: 0,
+  wrong: 0,
+  totalSolveTime: 0
+}
+
+// act as if the first answer has been given at the start immediately so we can calculate the correct duration on the actual first answer
+let latestAnswerTimestamp = performance.now()
+
 // Animation
 let animFrame: number | null = null
 let animStart: number | null = null
@@ -171,11 +181,15 @@ function shiftBalance(delta: number) {
     setWinner('p1')
     clearAiTimer()
     if (props.mode === 'ai' && props.aiLevel) {
+      savePerformance(props.operation, props.range, stats)
       unlockNextAiLevel(props.operation, props.range, props.aiLevel)
       emit('aiBeaten', props.aiLevel)
     }
   } else if (balance.value <= 0) {
     if (props.mode === "versus") { playWin() }
+    else {
+      savePerformance(props.operation, props.range, stats)
+    }
     setWinner('p2')
     clearAiTimer()
   }
@@ -191,8 +205,22 @@ function setWinner(player: null | 'p1' | 'p2') {
   }, 100)
 }
 
-function onP1Correct() { shiftBalance(+SHIFT_CORRECT) }
-function onP1Wrong()   { shiftBalance(-SHIFT_WRONG) }
+function onP1Correct() { 
+  shiftBalance(+SHIFT_CORRECT)
+  stats.correct++
+  const timestamp = performance.now()
+  const answerTime = timestamp - latestAnswerTimestamp
+  latestAnswerTimestamp = timestamp
+  stats.totalSolveTime += answerTime
+}
+function onP1Wrong()   {
+  shiftBalance(-SHIFT_WRONG)
+  stats.wrong++
+  const timestamp = performance.now()
+  const answerTime = timestamp - latestAnswerTimestamp
+  latestAnswerTimestamp = timestamp
+  stats.totalSolveTime += answerTime
+}
 function onP2Correct() { shiftBalance(-SHIFT_CORRECT) }
 function onP2Wrong()   { shiftBalance(+SHIFT_WRONG) }
 
