@@ -216,10 +216,6 @@ function onP1Correct() {
 function onP1Wrong()   {
   shiftBalance(-SHIFT_WRONG)
   stats.wrong++
-  const timestamp = performance.now()
-  const answerTime = timestamp - latestAnswerTimestamp
-  latestAnswerTimestamp = timestamp
-  stats.totalSolveTime += answerTime
 }
 function onP2Correct() { shiftBalance(-SHIFT_CORRECT) }
 function onP2Wrong()   { shiftBalance(+SHIFT_WRONG) }

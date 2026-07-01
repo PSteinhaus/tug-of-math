@@ -113,6 +113,8 @@ defineExpose({ refresh })
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  height: 100vh;
 }
 
 .menu-content {
@@ -122,6 +124,10 @@ defineExpose({ refresh })
   flex-direction: column;
   align-items: center;
   gap: 18px;
+  /* Keep the content centered but allow it to scroll */
+  margin: auto;
+  padding: 20px 0;
+  min-height: min-content; /* This ensures the content can grow */
 }
 
 .menu-column {

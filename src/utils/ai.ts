@@ -110,21 +110,21 @@ const AI_CONFIG: Record<
 > = {
     addsub: {
         10: {
-            slowSolveTime: 14000,
+            slowSolveTime: 16300,
             fastSolveTime: 2600,
             easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         20: {
-            slowSolveTime: 14500,
+            slowSolveTime: 16500,
             fastSolveTime: 2800,
             easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         100: {
-            slowSolveTime: 24500,
+            slowSolveTime: 26500,
             fastSolveTime: 6400,
             easyAccuracy: 0.70,
             hardAccuracy: 0.97,
@@ -147,7 +147,7 @@ const AI_CONFIG: Record<
         },
 
         100: {
-            slowSolveTime: 14000,
+            slowSolveTime: 16000,
             fastSolveTime: 2900,
             easyAccuracy: 0.77,
             hardAccuracy: 0.99,
