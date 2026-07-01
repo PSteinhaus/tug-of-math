@@ -11,6 +11,7 @@ import { PerformanceEntry, loadPerformance } from "../utils/performance"
 import { aiLevel, difficultyColor } from "../utils/ai"
 import type { NumberRange } from "../utils/cookies"
 import type { OperationType } from "../utils/equations"
+import { mixColors } from "../utils/colors"
 
 interface Point {
   x: number  // 0 … 1 (normalised horizontal)
@@ -149,6 +150,27 @@ function draw(progress = 1.0) {
     return 3
   }
 
+  function speedColor(
+    rel: number
+  ): string {
+      const level = relToLevel(rel)
+
+      if (level <= 1)
+          return difficultyColor(1)
+
+      if (level >= 5)
+          return difficultyColor(5)
+
+      const lower = Math.floor(level)
+      const upper = Math.ceil(level)
+      const t = level - lower
+
+      const c1 = difficultyColor(lower)
+      const c2 = difficultyColor(upper)
+
+      return mixColors(c1, c2, t)
+  }
+
   // Load raw data
   const entries: PerformanceEntry[] = loadPerformance(props.operation, props.range)
   const accuracyRaw = entries.map((e) => e.accuracy)
@@ -197,7 +219,7 @@ function draw(progress = 1.0) {
   // Data points
   if (progress > 0.3) {
     drawPoints(ctx, accPoints, toPixelX, (p: Point) => toPixelAccuracyY(p.y), "#2e7d32")
-    drawPoints(ctx, speedPoints, toPixelX, (p: Point) => relToPixelY(p.y), "#178dff")
+    drawColoredPoints(ctx, speedPoints, toPixelX, (p: Point) => relToPixelY(p.y), (p: Point) => speedColor(p.y))
   }
 
   ctx.restore()
@@ -216,6 +238,22 @@ function levelToPixel(level: number, minLevel: number, maxLevel: number, bottom:
     SPEED_MARGIN -
     ((level - minLevel) / (maxLevel - minLevel)) * usableHeight
   )
+}
+
+function createDifficultyGradient(
+    ctx: CanvasRenderingContext2D,
+    yTop: number,
+    yBottom: number
+) {
+    const gradient = ctx.createLinearGradient(0, yTop, 0, yBottom)
+
+    gradient.addColorStop(0.00, difficultyColor(5))
+    gradient.addColorStop(0.25, difficultyColor(4))
+    gradient.addColorStop(0.50, difficultyColor(3))
+    gradient.addColorStop(0.75, difficultyColor(2))
+    gradient.addColorStop(1.00, difficultyColor(1))
+
+    return gradient
 }
 
 function drawGrid(
@@ -444,6 +482,21 @@ function drawPoints(
   }
 }
 
+function drawColoredPoints(
+    ctx: CanvasRenderingContext2D,
+    points: Point[],
+    toX: (p: Point) => number,
+    toY: (p: Point) => number,
+    color: (p: Point) => string
+) {
+    for (const p of points) {
+        ctx.fillStyle = color(p)
+        ctx.beginPath()
+        ctx.arc(toX(p), toY(p), 3, 0, Math.PI * 2)
+        ctx.fill()
+    }
+}
+
 function drawLegend(ctx: CanvasRenderingContext2D, width: number) {
   const legendY = GRAPH_HEIGHT - 4
   const centerX = width / 2
@@ -458,8 +511,13 @@ function drawLegend(ctx: CanvasRenderingContext2D, width: number) {
   ctx.fillText("Genauigkeit", centerX - 104, legendY + 2)
 
   // speed
-  ctx.fillStyle = "#178dff"
+  ctx.fillStyle = createDifficultyGradient(
+      ctx,
+      legendY - 8,
+      legendY + 4
+  )
   ctx.fillRect(centerX + 10, legendY - 8, 12, 12)
+  ctx.fillStyle = "#444"
   ctx.fillText("Tempo", centerX + 26, legendY + 2)
 }
 

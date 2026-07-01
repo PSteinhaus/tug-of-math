@@ -107,14 +107,18 @@ defineExpose({ refresh })
   inset: 0;
   background: #f5f0eb;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start */
   justify-content: center;
   padding: 24px 16px;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
+  /* Better scroll handling for mobile */
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Ensure proper height calculation */
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
 }
 
 .menu-content {
@@ -124,10 +128,12 @@ defineExpose({ refresh })
   flex-direction: column;
   align-items: center;
   gap: 18px;
-  /* Keep the content centered but allow it to scroll */
-  margin: auto;
-  padding: 20px 0;
-  min-height: min-content; /* This ensures the content can grow */
+  /* Key fixes for Firefox mobile */
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height */
+  height: auto;
+  padding: 0 0 30px 0; /* Add bottom padding for scroll space */
+  flex-shrink: 0; /* Prevent content from shrinking */
 }
 
 .menu-column {
@@ -141,6 +147,8 @@ defineExpose({ refresh })
 .performance {
   width: 100%;
   max-width: 720px;
+  flex-shrink: 0; /* Prevent the graph from shrinking */
+  margin-bottom: 20px; /* Add bottom margin for scroll space */
 }
 
 .back-link {

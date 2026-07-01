@@ -47,7 +47,7 @@ export function getAiAnswer(correctAnswer: number, accuracy: number, maxNumber: 
 function powerCurve(
   level: number,
   maxLevel: number,
-  exponent = 0.9
+  exponent = 0.6
 ): number {
   const x = (level - 1) / (maxLevel - 1)
   return Math.pow(x, exponent)
@@ -83,13 +83,11 @@ function createAiLevel(
   config: DifficultyConfig
 ): AiLevel {
   const t = powerCurve(level, maxLevel)
-  console.log("t: "+t)
   let solveTime = lerp(
     config.slowSolveTime,
     config.fastSolveTime,
     t
   )
-  console.log("solveTime: "+solveTime)
 
   return {
       id: level,
@@ -110,21 +108,21 @@ const AI_CONFIG: Record<
 > = {
     addsub: {
         10: {
-            slowSolveTime: 16300,
+            slowSolveTime: 22300,
             fastSolveTime: 2600,
             easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         20: {
-            slowSolveTime: 16500,
+            slowSolveTime: 22500,
             fastSolveTime: 2800,
             easyAccuracy: 0.75,
             hardAccuracy: 1.00,
         },
 
         100: {
-            slowSolveTime: 26500,
+            slowSolveTime: 38500,
             fastSolveTime: 6400,
             easyAccuracy: 0.70,
             hardAccuracy: 0.97,
@@ -133,21 +131,21 @@ const AI_CONFIG: Record<
 
     muldiv: {
         10: {
-            slowSolveTime: 14000,
+            slowSolveTime: 19000,
             fastSolveTime: 2600,
             easyAccuracy: 0.80,
             hardAccuracy: 1.00,
         },
 
         20: {
-            slowSolveTime: 14500,
+            slowSolveTime: 20500,
             fastSolveTime: 2900,
             easyAccuracy: 0.76,
             hardAccuracy: 0.99,
         },
 
         100: {
-            slowSolveTime: 16000,
+            slowSolveTime: 22000,
             fastSolveTime: 2900,
             easyAccuracy: 0.77,
             hardAccuracy: 0.99,
