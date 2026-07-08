@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import RangeMenu from './components/RangeMenu.vue'
 import MainMenu from './components/MainMenu.vue'
 import GameScreen from './components/GameScreen.vue'
@@ -57,6 +57,28 @@ const selectedRange = ref<NumberRange>(10)
 const selectedOperation = ref<OperationType>('addsub')
 const menuRef = ref<InstanceType<typeof MainMenu> | null>(null)
 const rangeMenuRef = ref<InstanceType<typeof RangeMenu> | null>(null)
+
+const stack: Screen[] = ['ranges']
+
+onMounted(() => {
+  history.replaceState({ screen: 'ranges' }, '')
+  window.addEventListener('popstate', onPopState)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', onPopState)
+})
+
+function navigate(to: Screen) {
+  stack.push(to)
+  screen.value = to
+  history.pushState({}, '')
+}
+
+function onPopState() {
+  stack.pop()
+  screen.value = stack[stack.length - 1]
+}
 
 // Generate colors once on app start
 function hslToHex(h: number, s: number, l: number): string {
@@ -85,19 +107,19 @@ const p2Light = hslToHex(h2, 40, 65)
 function selectRange(op: OperationType, r: NumberRange) {
   selectedOperation.value = op
   selectedRange.value = r
-  screen.value = 'menu'
+  navigate('menu')
 }
 
 function startVersus() {
   gameMode.value = 'versus'
   aiLevel.value = null
-  screen.value = 'game'
+  navigate('game')
 }
 
 function startAi(level: number) {
   gameMode.value = 'ai'
   aiLevel.value = level
-  screen.value = 'game'
+  navigate('game')
 }
 
 async function goBack() {
