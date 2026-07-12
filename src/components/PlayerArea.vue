@@ -58,6 +58,8 @@ const equationData = computed(() => formatEquation(currentEq.value, inputValue.v
 const equationParts = computed(() => equationData.value.parts)
 const missingIndex = computed(() => equationData.value.missingIndex)
 
+var locallyDisabled = false
+
 function onDigit(d: string) {
   if (props.disabled) return
   const maxLen = props.maxNumber >= 100 ? 3 : 2
@@ -80,8 +82,10 @@ function evaluate() {
       playCorrect2()
     triggerFlash('correct')
     emit('correct')
+    locallyDisabled = true
     setTimeout(() => {
       currentEq.value = generateEquation(props.maxNumber, props.operation)
+      locallyDisabled = false
       inputValue.value = ''
     }, 400)
   } else {
@@ -92,7 +96,7 @@ function evaluate() {
 }
 
 function onSubmit() {
-  if (props.disabled) return
+  if (props.disabled || locallyDisabled) return
   evaluate()
 }
 
