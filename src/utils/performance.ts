@@ -22,7 +22,11 @@ export interface PerformanceEntry {
 
 const MAX_HISTORY = 50
 
-export function calculatePerformance(stats: MatchStats): PerformanceEntry {
+export function calculatePerformance(stats: MatchStats): PerformanceEntry | null {
+    // first catch edge cases
+    if (stats.totalSolveTime <= 0. || stats.correct + stats.wrong <= 0.)
+        return null;
+
     const accuracy = stats.correct / (stats.correct + stats.wrong)
     const averageSolveTime = stats.totalSolveTime / (stats.correct + stats.wrong)
 
@@ -71,7 +75,9 @@ export function savePerformance(
 ) {
     const history = loadPerformance(operation, range)
 
-    history.push(calculatePerformance(stats))
+    const newEntry = calculatePerformance(stats)
+    if (newEntry)
+        history.push(newEntry)
 
     while (history.length > MAX_HISTORY) {
         history.shift()

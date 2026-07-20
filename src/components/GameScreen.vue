@@ -25,7 +25,6 @@
     <div class="player-slot bottom">
       <div class="player-wrapper">
         <PlayerArea
-          ref="p1Area"
           :rotated="false"
           :color="props.p1Color"
           :color-dark="props.p1Dark"
@@ -119,7 +118,6 @@ const winnerClickable = ref(false)
 
 const winnerName = computed(() => winner.value === 'p1' ? player1Name : player2Name.value)
 
-const p1Area = ref<InstanceType<typeof PlayerArea> | null>(null)
 const p2Area = ref<InstanceType<typeof PlayerArea> | null>(null)
 
 const bgStyle = computed(() => {
