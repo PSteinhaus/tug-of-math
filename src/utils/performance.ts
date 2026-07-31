@@ -134,8 +134,8 @@ export function latestPerformance(
 
 function isPerformanceEntry(value: any): value is PerformanceEntry {
     return value
-        && typeof value.accuracy === "number"
-        && typeof value.solveTime === "number"
+        && typeof value.accuracy === "number" && value.accuracy >= 0. && value.accuracy <= 1.01
+        && typeof value.solveTime === "number" && value.solveTime > 0. && value.solveTime < Infinity
         && typeof value.timestamp === "number"
 }
 
