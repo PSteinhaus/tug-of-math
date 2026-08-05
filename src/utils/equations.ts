@@ -15,21 +15,27 @@ function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-// For custom ranges (small maxNumber), ensure at least 20% of equations use the max number
-function shouldForceMaxNumber(maxNumber: number): boolean {
-  // For custom ranges (maxNumber <= 10), 20% chance to force max number usage
-  if (maxNumber <= 10) {
-    return Math.random() < 0.20
-  }
-  return false
+// For custom ranges, ensure at least 20% of equations use the max number
+function shouldForceMaxNumber(): boolean {
+  return Math.random() < 0.20
 }
 
-export function generateEquation(maxNumber: number = 20, operation: OperationType = 'addsub'): Equation {
+function getDivisors(a: number, maxNumber: number): number[] {
+  const divisors = []
+  for (let i = 1; i <= a; i++) {
+    if (a % i === 0 && i <= maxNumber) {
+      divisors.push(i)
+    }
+  }
+  return divisors
+}
+
+export function generateEquation(maxNumber: number = 20, operation: OperationType = 'addsub', isCustom: boolean = false): Equation {
   const op: Operator = operation === 'addsub'
     ? (Math.random() < 0.5 ? '+' : '−')
     : (Math.random() < 0.5 ? '×' : '÷')
 
-  const forceMaxNumber = shouldForceMaxNumber(maxNumber)
+  const forceMaxNumber = isCustom && shouldForceMaxNumber()
 
   let a: number, b: number, result: number
 
@@ -65,21 +71,19 @@ export function generateEquation(maxNumber: number = 20, operation: OperationTyp
     }
     result = a - b
   } else if (op === '×') {
-    if (maxNumber >= 100) {
+    if (maxNumber >= 100 && !isCustom) {
       // kleines Einmaleins: factors 1..10
       a = randInt(1, 10)
       b = randInt(1, 10)
     } else if (forceMaxNumber) {
-      // For small ranges, include maxNumber in multiplication
-      if (maxNumber >= 2) {
-        // Use maxNumber as a factor: maxNumber × 1 = maxNumber
-        a = maxNumber
-        b = 1
-      } else {
-        // maxNumber is 1, so only 1×1=1 is possible
-        a = 1
-        b = 1
-      }
+      // Find all possible divisors to find factorizations
+      const divisors = getDivisors(maxNumber, maxNumber);
+      if (divisors.length > 0) {
+          b = divisors[randInt(0, divisors.length - 1)]
+        } else {
+          b = 1
+        }
+        a = maxNumber / b
     } else {
       a = randInt(1, maxNumber)
       b = randInt(1, Math.max(1, Math.floor(maxNumber / a)))
@@ -96,12 +100,7 @@ export function generateEquation(maxNumber: number = 20, operation: OperationTyp
       if (maxNumber >= 1) {
         a = maxNumber
         // Find a divisor that divides maxNumber evenly
-        const divisors = []
-        for (let i = 1; i <= a; i++) {
-          if (a % i === 0 && i <= maxNumber) {
-            divisors.push(i)
-          }
-        }
+        let divisors = getDivisors(a, maxNumber);
         if (divisors.length > 0) {
           b = divisors[randInt(0, divisors.length - 1)]
           result = a / b

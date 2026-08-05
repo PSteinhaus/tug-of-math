@@ -175,7 +175,7 @@
   
   const RANGES = computed(() => [
     {
-      value: 'custom'  as NumberRange, label: `Mein Zahlenraum (${currentCustomRange.value})`,  icon: '🎯',
+      value: 'custom'  as NumberRange, label: `Mein Zahlenraum (${currentCustomRange.value})`,  icon: '',
       addsubUnlocked: unlocked.value.addsub.custom,
       muldivUnlocked: unlocked.value.muldiv.custom,
     },
