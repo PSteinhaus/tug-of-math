@@ -49,6 +49,7 @@
         class="performance"
         :range="props.range"
         :operation="props.operation"
+        :customRangeValue="customRangeValue"
       />
     </div>
   </div>
@@ -74,7 +75,13 @@ const emit = defineEmits<{
 
 const currentCustomRange = ref(props.range === 'custom' ? getCustomRange(props.operation) : 0)
 const unlockedLevels = ref(1)
-const aiLevels = generateAiLevels(props.range, props.operation)
+const customRangeValue = computed(() => props.range === 'custom' ? currentCustomRange.value : undefined)
+const aiLevels = computed(() => {
+  if (props.range === 'custom') {
+    return generateAiLevels(props.range, props.operation, currentCustomRange.value)
+  }
+  return generateAiLevels(props.range, props.operation)
+})
 
 onMounted(() => {
   unlockedLevels.value = getUnlockedAiLevels(props.operation, props.range)

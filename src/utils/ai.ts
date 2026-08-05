@@ -65,8 +65,13 @@ function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t
 }
 
-export function aiLevel(level: number, numberRange: NumberRange, operation: OperationType) {
-  let config = getConfig(numberRange, operation)
+export function aiLevel(level: number, numberRange: NumberRange, operation: OperationType, customRangeValue?: number) {
+  let config
+  if (numberRange === 'custom' && customRangeValue !== undefined) {
+    config = getInterpolatedConfig(customRangeValue, operation)
+  } else {
+    config = getConfig(numberRange, operation)
+  }
   const maxLevel = numberRange === 'custom' ? 4 : 5
   return createAiLevel(level, maxLevel, config, numberRange)
 }
@@ -84,6 +89,45 @@ function getConfig(
   }
 
   return config
+}
+
+function getInterpolatedConfig(
+  customRangeValue: number,
+  operation: OperationType
+): DifficultyConfig {
+  const config10 = AI_CONFIG[operation][10]
+  const config20 = AI_CONFIG[operation][20]
+  const config100 = AI_CONFIG[operation][100]
+
+  // For custom ranges smaller than 10, use values for 10
+  if (customRangeValue <= 10) {
+    return config10
+  }
+
+  // For custom ranges between 10 and 20, interpolate between 10 and 20
+  if (customRangeValue < 20) {
+    const t = (customRangeValue - 10) / (20 - 10)
+    return {
+      slowSolveTime: lerp(config10.slowSolveTime, config20.slowSolveTime, t),
+      fastSolveTime: lerp(config10.fastSolveTime, config20.fastSolveTime, t),
+      easyAccuracy: lerp(config10.easyAccuracy, config20.easyAccuracy, t),
+      hardAccuracy: lerp(config10.hardAccuracy, config20.hardAccuracy, t),
+    }
+  }
+
+  // For custom ranges between 20 and 100, interpolate between 20 and 100
+  if (customRangeValue <= 100) {
+    const t = (customRangeValue - 20) / (100 - 20)
+    return {
+      slowSolveTime: lerp(config20.slowSolveTime, config100.slowSolveTime, t),
+      fastSolveTime: lerp(config20.fastSolveTime, config100.fastSolveTime, t),
+      easyAccuracy: lerp(config20.easyAccuracy, config100.easyAccuracy, t),
+      hardAccuracy: lerp(config20.hardAccuracy, config100.hardAccuracy, t),
+    }
+  }
+
+  // For custom ranges above 100, use values for 100
+  return config100
 }
 
 function createAiLevel(
@@ -182,10 +226,11 @@ const AI_CONFIG: Record<
 
 export function generateAiLevels(
   numberRange: NumberRange,
-  operation: OperationType
+  operation: OperationType,
+  customRangeValue?: number
 ): AiLevel[] {
   const levelNames = numberRange === 'custom' ? CUSTOM_AI_LEVEL_NAMES : AI_LEVEL_NAMES
   return levelNames.map((_, index) =>
-    aiLevel(index + 1, numberRange, operation)
+    aiLevel(index + 1, numberRange, operation, customRangeValue)
   )
 }

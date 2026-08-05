@@ -105,7 +105,8 @@ const emit = defineEmits<{
 const player1Name = 'Spieler 1'
 const player2Name = computed(() => {
   if (props.mode === 'ai' && props.aiLevel) {
-    return aiLevel(props.aiLevel, props.range, props.operation)?.name ?? 'KI'
+    const customValue = props.range === 'custom' ? props.maxNumber : undefined
+    return aiLevel(props.aiLevel, props.range, props.operation, customValue)?.name ?? 'KI'
   }
   return 'Spieler 2'
 })
@@ -227,7 +228,8 @@ function clearAiTimer() {
 
 function scheduleAiMove() {
   if (!props.aiLevel || props.mode !== 'ai' || winner.value) return
-  const level = aiLevel(props.aiLevel, props.range, props.operation)
+  const customValue = props.range === 'custom' ? props.maxNumber : undefined
+  const level = aiLevel(props.aiLevel, props.range, props.operation, customValue)
   if (!level) return
   aiTimer = setTimeout(() => {
     if (winner.value || !p2Area.value) return

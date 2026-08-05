@@ -22,6 +22,7 @@ interface Point {
 const props = defineProps<{
   range: NumberRange
   operation: OperationType
+  customRangeValue?: number
 }>()
 
 // ── Canvas & Resize ────────────────────────────────────
@@ -111,12 +112,12 @@ function draw(progress = 1.0) {
 
   // Compute AI level info for y‑axis
   const referenceLevel = props.range === 'custom' ? 4 : 5
-  const gmLevel = aiLevel(referenceLevel, props.range, props.operation)
+  const gmLevel = aiLevel(referenceLevel, props.range, props.operation, props.customRangeValue)
   const gmTime = gmLevel.solveTime
 
   const aiLevelCount = props.range === 'custom' ? 4 : 5
   const levelInfos = Array.from({ length: aiLevelCount }, (_, i) => i + 1).map((lvl) => {
-    const ai = aiLevel(lvl, props.range, props.operation)
+    const ai = aiLevel(lvl, props.range, props.operation, props.customRangeValue)
     return {
       name: ai.name, // e.g. "Anfänger"
       rel: gmTime / ai.solveTime, // ≥ 1 for slower levels
