@@ -110,10 +110,12 @@ function draw(progress = 1.0) {
   const graphHeight = bottom - top
 
   // Compute AI level info for y‑axis
-  const gmLevel = aiLevel(5, props.range, props.operation)
+  const referenceLevel = props.range === 'custom' ? 4 : 5
+  const gmLevel = aiLevel(referenceLevel, props.range, props.operation)
   const gmTime = gmLevel.solveTime
 
-  const levelInfos = [1, 2, 3, 4, 5].map((lvl) => {
+  const aiLevelCount = props.range === 'custom' ? 4 : 5
+  const levelInfos = Array.from({ length: aiLevelCount }, (_, i) => i + 1).map((lvl) => {
     const ai = aiLevel(lvl, props.range, props.operation)
     return {
       name: ai.name, // e.g. "Anfänger"
@@ -123,11 +125,13 @@ function draw(progress = 1.0) {
 
   function relToLevel(rel: number): number {
     const rels = levelInfos.map(l => l.rel)
+    const maxLevelIndex = rels.length - 1
+    const maxLevel = maxLevelIndex + 1
 
-    // Faster than Grandmaster
-    if (rel > rels[4]) {
-      const slope = rels[4] - rels[3]
-      return 5 + (rel - rels[4]) / slope
+    // Faster than the top level
+    if (rel > rels[maxLevelIndex]) {
+      const slope = rels[maxLevelIndex] - rels[maxLevelIndex - 1]
+      return maxLevel + (rel - rels[maxLevelIndex]) / slope
     }
 
     // Slower than Beginner
@@ -137,7 +141,7 @@ function draw(progress = 1.0) {
     }
 
     // Between AI levels
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < maxLevelIndex; i++) {
       if (rel >= rels[i] && rel <= rels[i + 1]) {
         const t =
           (rel - rels[i]) /
@@ -147,7 +151,7 @@ function draw(progress = 1.0) {
       }
     }
 
-    return 3
+    return maxLevel / 2
   }
 
   function speedColor(
@@ -179,10 +183,11 @@ function draw(progress = 1.0) {
 
   const userLevels = speedRaw.map(relToLevel)
 
+  const graphMaxLevel = props.range === 'custom' ? 4 : 5
   const minLevel = Math.min(1, ...userLevels)
-  const maxLevel = Math.max(5, ...userLevels)
+  const maxLevelValue = Math.max(graphMaxLevel, ...userLevels)
 
-  const relToPixelY = (rel: number) => levelToPixel(relToLevel(rel), minLevel, maxLevel, bottom, graphHeight)
+  const relToPixelY = (rel: number) => levelToPixel(relToLevel(rel), minLevel, maxLevelValue, bottom, graphHeight)
 
   // Convert to points
   const accPoints = toGraphPoints(accuracyRaw)
@@ -203,7 +208,7 @@ function draw(progress = 1.0) {
   // Draw grid & axes – pass the accuracy mapping
   drawGrid(ctx, left, right, toPixelAccuracyY)
   drawAxes(ctx, left, top, graphWidth, graphHeight, entries.length, toPixelAccuracyY)
-  drawSpeedLabels(ctx, right, levelInfos, minLevel, maxLevel, bottom, graphHeight)  
+  drawSpeedLabels(ctx, right, levelInfos, minLevel, maxLevelValue, bottom, graphHeight)  
 
   // Draw curves (animated)
   ctx.save()
@@ -214,7 +219,7 @@ function draw(progress = 1.0) {
   // Accuracy line
   drawSpline(ctx, accSpline, toPixelX, (p: Point) => toPixelAccuracyY(p.y), "#4caf84", 3.5)
   // Speed line
-  drawSpeedSpline(ctx, speedSpline, levelInfos, toPixelX, relToPixelY, 3.5, minLevel, maxLevel, bottom, graphHeight) 
+  drawSpeedSpline(ctx, speedSpline, levelInfos, toPixelX, relToPixelY, 3.5, minLevel, maxLevelValue, bottom, graphHeight) 
 
   // Data points
   if (progress > 0.3) {
@@ -232,6 +237,11 @@ const SPEED_MARGIN = 10
 
 function levelToPixel(level: number, minLevel: number, maxLevel: number, bottom: number, graphHeight: number) {
   const usableHeight = graphHeight - SPEED_MARGIN * 2
+  
+  // Handle case where maxLevel equals minLevel (only one level)
+  if (maxLevel === minLevel) {
+    return bottom - SPEED_MARGIN - usableHeight / 2
+  }
 
   return (
     bottom -
@@ -246,12 +256,13 @@ function createDifficultyGradient(
     yBottom: number
 ) {
     const gradient = ctx.createLinearGradient(0, yTop, 0, yBottom)
+    const maxLevel = props.range === 'custom' ? 4 : 5
 
-    gradient.addColorStop(0.00, difficultyColor(5))
-    gradient.addColorStop(0.25, difficultyColor(4))
-    gradient.addColorStop(0.50, difficultyColor(3))
-    gradient.addColorStop(0.75, difficultyColor(2))
-    gradient.addColorStop(1.00, difficultyColor(1))
+    // Distribute color stops evenly across levels
+    for (let level = maxLevel; level >= 1; level--) {
+      const stop = (maxLevel - level) / (maxLevel - 1)
+      gradient.addColorStop(stop, difficultyColor(level))
+    }
 
     return gradient
 }
@@ -325,7 +336,7 @@ function drawSpeedLabels(
   ctx.font = "12px sans-serif"
   ctx.textAlign = "left"
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < levels.length; i++) {
     // level i+1 → equal spacing
     const y = levelToPixel(i + 1, minLevel, maxLevel, bottom, graphHeight)
     ctx.fillText(levels[i].name, right + 6, y + 4)
@@ -369,7 +380,8 @@ function drawSpeedSpline(
 
   // Find pixel y-positions of AI level boundaries
   const beginnerY = levelToPixel(1, minLevel, maxLevel, bottom, graphHeight)
-  const grandmasterY = levelToPixel(5, minLevel, maxLevel, bottom, graphHeight)
+  const topLevel = props.range === 'custom' ? 4 : 5
+  const grandmasterY = levelToPixel(topLevel, minLevel, maxLevel, bottom, graphHeight)
 
   // We'll draw three passes:
   // 1. Segments above Großmeister   → solid purple
@@ -416,33 +428,35 @@ function drawSpeedSpline(
   // Build a gradient that exactly spans beginnerY → grandmasterY
   const gradient = ctx.createLinearGradient(
       0,
-      levelToPixel(5, minLevel, maxLevel, bottom, graphHeight),
+      levelToPixel(topLevel, minLevel, maxLevel, bottom, graphHeight),
       0,
       levelToPixel(1, minLevel, maxLevel, bottom, graphHeight)
   )
 
-for (let level = 5; level >= 1; level--) {
+  for (let level = topLevel; level >= 1; level--) {
     const stop =
         (levelToPixel(level, minLevel, maxLevel, bottom, graphHeight)
-        - levelToPixel(5, minLevel, maxLevel, bottom, graphHeight))
+        - levelToPixel(topLevel, minLevel, maxLevel, bottom, graphHeight))
         /
         (levelToPixel(1, minLevel, maxLevel, bottom, graphHeight)
-        - levelToPixel(5, minLevel, maxLevel, bottom, graphHeight))
+        - levelToPixel(topLevel, minLevel, maxLevel, bottom, graphHeight))
 
     gradient.addColorStop(stop, difficultyColor(level))
-}
+  }
 
-  // Großmeister at the top (y = grandmasterY)
-  gradient.addColorStop(0, difficultyColor(5))
+  // Top level at the top (y = grandmasterY)
+  gradient.addColorStop(0, difficultyColor(topLevel))
 
   // Intermediate levels
   const rangeY = beginnerY - grandmasterY
   if (rangeY > 0) {
-    for (let level = 4; level >= 2; level--) {
-      const info = levelInfos[level - 1]
-      const py = toY(info.rel)
-      const fraction = (py - grandmasterY) / rangeY
-      gradient.addColorStop(Math.max(0, Math.min(1, fraction)), difficultyColor(level))
+    for (let level = topLevel - 1; level >= 2; level--) {
+      if (levelInfos[level - 1]) {
+        const info = levelInfos[level - 1]
+        const py = toY(info.rel)
+        const fraction = (py - grandmasterY) / rangeY
+        gradient.addColorStop(Math.max(0, Math.min(1, fraction)), difficultyColor(level))
+      }
     }
   }
 

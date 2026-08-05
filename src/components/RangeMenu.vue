@@ -69,7 +69,7 @@
   
   <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted } from 'vue'
-  import { isRangeUnlocked, type NumberRange } from '../utils/cookies'
+  import { isRangeUnlocked, getCustomRange, type NumberRange } from '../utils/cookies'
   import type { OperationType } from '../utils/equations'
   
   const props = defineProps<{
@@ -84,12 +84,13 @@
   }>()
   
   const unlocked = ref({
-    addsub: { 10: true, 20: false, 100: false },
-    muldiv: { 10: false, 20: true, 100: false },
+    addsub: { 10: true, 20: false, 100: false, custom: true },
+    muldiv: { 10: false, 20: true, 100: false, custom: true },
   })
   
   const operation = ref<OperationType>('addsub')
   const selectedRange = ref<NumberRange | null>(null)
+  const currentCustomRange = ref(getCustomRange())
 
   const lights = ref(createLights())
 
@@ -145,13 +146,27 @@
         10:  isRangeUnlocked('addsub', 10),
         20:  isRangeUnlocked('addsub', 20),
         100: isRangeUnlocked('addsub', 100),
+        custom: isRangeUnlocked('addsub', 'custom'),
       },
       muldiv: {
         10:  isRangeUnlocked('muldiv', 10),
         20:  isRangeUnlocked('muldiv', 20),
         100: isRangeUnlocked('muldiv', 100),
+        custom: isRangeUnlocked('muldiv', 'custom'),
       },
     }
+
+    // Set up watcher for custom range changes
+    const interval = setInterval(() => {
+      const newCustomRange = getCustomRange()
+      if (newCustomRange !== currentCustomRange.value) {
+        currentCustomRange.value = newCustomRange
+      }
+    }, 1000)
+
+    onUnmounted(() => {
+      clearInterval(interval)
+    })
   })
 
   onUnmounted(() => {
@@ -159,6 +174,11 @@
   })
   
   const RANGES = computed(() => [
+    {
+      value: 'custom'  as NumberRange, label: `Mein Zahlenraum (${currentCustomRange.value})`,  icon: '🎯',
+      addsubUnlocked: unlocked.value.addsub.custom,
+      muldivUnlocked: unlocked.value.muldiv.custom,
+    },
     {
       value: 10  as NumberRange, label: 'Zahlen bis 10',  icon: '①',
       addsubUnlocked: unlocked.value.addsub[10],
@@ -238,11 +258,13 @@ function animateLights() {
         10:  isRangeUnlocked('addsub', 10),
         20:  isRangeUnlocked('addsub', 20),
         100: isRangeUnlocked('addsub', 100),
+        custom: isRangeUnlocked('addsub', 'custom'),
       },
       muldiv: {
         10:  isRangeUnlocked('muldiv', 10),
         20:  isRangeUnlocked('muldiv', 20),
         100: isRangeUnlocked('muldiv', 100),
+        custom: isRangeUnlocked('muldiv', 'custom'),
       },
     }
   }

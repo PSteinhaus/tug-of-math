@@ -25,6 +25,14 @@ const AI_LEVEL_NAMES: string[] = [
   'Großmeister'
 ]
 
+// For custom ranges, we only have 4 levels (no Großmeister)
+const CUSTOM_AI_LEVEL_NAMES: string[] = [
+  'Anfänger',
+  'Fortgeschritten',
+  'Erfahren',
+  'Meister'
+]
+
 export function difficultyColor(id: number): string {
   const colors = ['#6aaa78', '#c5a34a', '#e08040', '#d05050', '#8040c0']
   return colors[id - 1] ?? '#aaa'
@@ -59,7 +67,8 @@ function lerp(a: number, b: number, t: number) {
 
 export function aiLevel(level: number, numberRange: NumberRange, operation: OperationType) {
   let config = getConfig(numberRange, operation)
-  return createAiLevel(level, 5, config)
+  const maxLevel = numberRange === 'custom' ? 4 : 5
+  return createAiLevel(level, maxLevel, config, numberRange)
 }
 
 function getConfig(
@@ -80,7 +89,8 @@ function getConfig(
 function createAiLevel(
   level: number,
   maxLevel: number,
-  config: DifficultyConfig
+  config: DifficultyConfig,
+  numberRange: NumberRange | null = null
 ): AiLevel {
   const t = powerCurve(level, maxLevel)
   let solveTime = lerp(
@@ -89,9 +99,12 @@ function createAiLevel(
     t
   )
 
+  // Use custom level names for custom range
+  const levelNames = numberRange === 'custom' ? CUSTOM_AI_LEVEL_NAMES : AI_LEVEL_NAMES
+
   return {
       id: level,
-      name: AI_LEVEL_NAMES[level -1],
+      name: levelNames[level - 1],
       solveTime,
       timingJitter: solveTime / 2,
       accuracy: lerp(
@@ -104,7 +117,7 @@ function createAiLevel(
 
 const AI_CONFIG: Record<
     OperationType,
-    Record<number, DifficultyConfig>
+    Record<number | string, DifficultyConfig>
 > = {
     addsub: {
         10: {
@@ -126,6 +139,13 @@ const AI_CONFIG: Record<
             fastSolveTime: 6400,
             easyAccuracy: 0.70,
             hardAccuracy: 0.97,
+        },
+
+        custom: {
+            slowSolveTime: 15000,
+            fastSolveTime: 1800,
+            easyAccuracy: 0.85,
+            hardAccuracy: 1.00,
         },
     },
 
@@ -150,6 +170,13 @@ const AI_CONFIG: Record<
             easyAccuracy: 0.77,
             hardAccuracy: 0.99,
         },
+
+        custom: {
+            slowSolveTime: 18000,
+            fastSolveTime: 2200,
+            easyAccuracy: 0.80,
+            hardAccuracy: 0.99,
+        },
     },
 }
 
@@ -157,7 +184,8 @@ export function generateAiLevels(
   numberRange: NumberRange,
   operation: OperationType
 ): AiLevel[] {
-  return AI_LEVEL_NAMES.map((_, index) =>
+  const levelNames = numberRange === 'custom' ? CUSTOM_AI_LEVEL_NAMES : AI_LEVEL_NAMES
+  return levelNames.map((_, index) =>
     aiLevel(index + 1, numberRange, operation)
   )
 }

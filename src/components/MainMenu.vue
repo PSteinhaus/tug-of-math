@@ -10,7 +10,7 @@
           <span>Zurück</span>
         </button>
 
-        <h1 class="title">Zahlen bis {{ range }}</h1>
+        <h1 class="title">{{ range === 'custom' ? `Mein Zahlenraum (${currentCustomRange})` : 'Zahlen bis ' + range }}</h1>
         <p class="subtitle">{{ operationLabel }}</p>
 
         <div class="section-label">Zwei Spieler</div>
@@ -55,9 +55,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { generateAiLevels } from '../utils/ai'
-import { getUnlockedAiLevels, type NumberRange } from '../utils/cookies'
+import { getUnlockedAiLevels, getCustomRange, type NumberRange } from '../utils/cookies'
 import type { OperationType } from '../utils/equations'
 import PerformanceGraph from './PerformanceGraph.vue';
 
@@ -72,11 +72,26 @@ const emit = defineEmits<{
   back: []
 }>()
 
+const currentCustomRange = ref(props.range === 'custom' ? getCustomRange() : 0)
 const unlockedLevels = ref(1)
 const aiLevels = generateAiLevels(props.range, props.operation)
 
 onMounted(() => {
   unlockedLevels.value = getUnlockedAiLevels(props.operation, props.range)
+  
+  // Set up watcher for custom range changes
+  if (props.range === 'custom') {
+    const interval = setInterval(() => {
+      const newCustomRange = getCustomRange()
+      if (newCustomRange !== currentCustomRange.value) {
+        currentCustomRange.value = newCustomRange
+      }
+    }, 1000)
+    
+    onUnmounted(() => {
+      clearInterval(interval)
+    })
+  }
 })
 
 const operationLabel = computed(() =>

@@ -24,7 +24,7 @@
         :mode="gameMode"
         :ai-level="aiLevel ?? undefined"
         :range="selectedRange"
-        :max-number="selectedRange"
+        :max-number="getMaxNumberForRange(selectedRange)"
         :operation="selectedOperation"
         :p1-color="p1Color"
         :p1-dark="p1Dark"
@@ -44,7 +44,7 @@ import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import RangeMenu from './components/RangeMenu.vue'
 import MainMenu from './components/MainMenu.vue'
 import GameScreen from './components/GameScreen.vue'
-import { type NumberRange } from './utils/cookies'
+import { type NumberRange, getMaxNumberForRange } from './utils/cookies'
 import { type OperationType } from './utils/equations'
 
 type Screen = 'ranges' | 'menu' | 'game'
