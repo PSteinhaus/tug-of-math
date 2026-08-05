@@ -9,7 +9,7 @@
         <span
           v-for="(part, i) in equationParts"
           :key="i"
-          :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−' || part === '×' || part === '÷', 'eq-sym': part === '=' }"
+          :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−' || part === '·' || part === ':', 'eq-sym': part === '=' }"
         >{{ part }}</span>
       </div>
       <!-- <div class="input-display">

@@ -24,7 +24,7 @@
         <div class="grid">
           <div class="col-header"></div>
           <div class="col-header">+ &amp; −</div>
-          <div class="col-header">× &amp; ÷</div>
+          <div class="col-header">· &amp; :</div>
   
           <template v-for="r in RANGES" :key="r.value">
             <div class="range-label">

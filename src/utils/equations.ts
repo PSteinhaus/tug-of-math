@@ -1,6 +1,6 @@
 export type MissingPosition = 'left' | 'right' | 'result'
 export type OperationType = 'addsub' | 'muldiv'
-export type Operator = '+' | '−' | '×' | '÷'
+export type Operator = '+' | '−' | '·' | ':'
 
 export interface Equation {
   a: number
@@ -33,7 +33,7 @@ function getDivisors(a: number, maxNumber: number): number[] {
 export function generateEquation(maxNumber: number = 20, operation: OperationType = 'addsub', isCustom: boolean = false): Equation {
   const op: Operator = operation === 'addsub'
     ? (Math.random() < 0.5 ? '+' : '−')
-    : (Math.random() < 0.5 ? '×' : '÷')
+    : (Math.random() < 0.5 ? '·' : ':')
 
   const forceMaxNumber = isCustom && shouldForceMaxNumber()
 
@@ -70,7 +70,7 @@ export function generateEquation(maxNumber: number = 20, operation: OperationTyp
       b = randInt(0, a)
     }
     result = a - b
-  } else if (op === '×') {
+  } else if (op === '·') {
     if (maxNumber >= 100 && !isCustom) {
       // kleines Einmaleins: factors 1..10
       a = randInt(1, 10)
@@ -90,7 +90,7 @@ export function generateEquation(maxNumber: number = 20, operation: OperationTyp
     }
     result = a * b
   } else {
-    // ÷: build from divisor × quotient = dividend
+    // : build from divisor · quotient = dividend
     if (maxNumber >= 100) {
       // kleines Einmaleins: divisor and quotient 1..10
       b = randInt(1, 10)
