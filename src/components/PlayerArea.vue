@@ -10,6 +10,7 @@
           v-for="(part, i) in equationParts"
           :key="i"
           :class="{ 'missing-box': i === missingIndex && inputValue === '', 'missing-filled': i === missingIndex && inputValue !== '', 'op-sym': part === '+' || part === '−' || part === '·' || part === ':', 'eq-sym': part === '=' }"
+          :data-op="part === '·' || part === ':' ? part : null"
         >{{ part }}</span>
       </div>
       <!-- <div class="input-display">
@@ -190,6 +191,11 @@ defineExpose({ getEquation, submitAnswer, reset() {
 .op-sym, .eq-sym {
   color: rgba(255,255,255,0.75);
   font-weight: 400;
+}
+
+.op-sym[data-op="·"], .op-sym[data-op=":"] {
+  font-weight: 700;
+  padding: 0 4px;
 }
 
 .input-display {
