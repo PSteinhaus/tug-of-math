@@ -90,7 +90,10 @@
   
   const operation = ref<OperationType>('addsub')
   const selectedRange = ref<NumberRange | null>(null)
-  const currentCustomRange = ref(getCustomRange())
+  const customRanges = ref({
+    addsub: getCustomRange('addsub'),
+    muldiv: getCustomRange('muldiv'),
+  })
 
   const lights = ref(createLights())
 
@@ -158,9 +161,13 @@
 
     // Set up watcher for custom range changes
     const interval = setInterval(() => {
-      const newCustomRange = getCustomRange()
-      if (newCustomRange !== currentCustomRange.value) {
-        currentCustomRange.value = newCustomRange
+      const newAddsubRange = getCustomRange('addsub')
+      const newMuldivRange = getCustomRange('muldiv')
+      if (newAddsubRange !== customRanges.value.addsub || newMuldivRange !== customRanges.value.muldiv) {
+        customRanges.value = {
+          addsub: newAddsubRange,
+          muldiv: newMuldivRange,
+        }
       }
     }, 1000)
 
@@ -175,7 +182,7 @@
   
   const RANGES = computed(() => [
     {
-      value: 'custom'  as NumberRange, label: `Mein Zahlenraum (${currentCustomRange.value})`,  icon: '',
+      value: 'custom'  as NumberRange, label: `Mein Zahlenraum (${customRanges.value.addsub} | ${customRanges.value.muldiv})`,  icon: '⚘',
       addsubUnlocked: unlocked.value.addsub.custom,
       muldivUnlocked: unlocked.value.muldiv.custom,
     },
@@ -266,6 +273,10 @@ function animateLights() {
         100: isRangeUnlocked('muldiv', 100),
         custom: isRangeUnlocked('muldiv', 'custom'),
       },
+    }
+    customRanges.value = {
+      addsub: getCustomRange('addsub'),
+      muldiv: getCustomRange('muldiv'),
     }
   }
   

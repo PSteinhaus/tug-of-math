@@ -19,6 +19,11 @@ interface UnlockState {
   muldiv: RangeState
 }
 
+interface CustomRangeState {
+  addsub: number
+  muldiv: number
+}
+
 const DEFAULT_STATE: UnlockState = {
   addsub: { 10: 1, 20: 0, 100: 0, custom: 1 },
   muldiv: { 10: 1, 20: 0, 100: 0, custom: 1 },
@@ -27,6 +32,11 @@ const DEFAULT_STATE: UnlockState = {
 // Default custom range starts at 1 (numbers 0 and 1)
 const DEFAULT_CUSTOM_RANGE = 1
 
+const DEFAULT_CUSTOM_RANGE_STATE: CustomRangeState = {
+  addsub: DEFAULT_CUSTOM_RANGE,
+  muldiv: DEFAULT_CUSTOM_RANGE,
+}
+
 function clampRange(state: RangeState): RangeState {
   return {
     10:  Math.max(0, Math.min(state[10]  ?? 0, maxLevel)),
@@ -34,6 +44,36 @@ function clampRange(state: RangeState): RangeState {
     100: Math.max(0, Math.min(state[100] ?? 0, maxLevel)),
     custom: state.custom !== undefined ? Math.max(0, Math.min(state.custom, maxLevel)) : undefined,
   } as RangeState
+}
+
+// Custom range state management
+function getCustomRangeState(): CustomRangeState {
+  const val = localStorage.getItem(CUSTOM_RANGE_KEY)
+  if (!val) return { ...DEFAULT_CUSTOM_RANGE_STATE }
+  try {
+    const parsed = JSON.parse(val)
+    if (parsed.addsub !== undefined && parsed.muldiv !== undefined) {
+      return {
+        addsub: Math.max(1, parsed.addsub),
+        muldiv: Math.max(1, parsed.muldiv),
+      }
+    }
+    // Legacy: single number stored
+    const legacyValue = parseInt(val, 10)
+    if (!isNaN(legacyValue) && legacyValue >= 1) {
+      return {
+        addsub: legacyValue,
+        muldiv: legacyValue,
+      }
+    }
+    return { ...DEFAULT_CUSTOM_RANGE_STATE }
+  } catch {
+    return { ...DEFAULT_CUSTOM_RANGE_STATE }
+  }
+}
+
+function saveCustomRangeState(state: CustomRangeState) {
+  localStorage.setItem(CUSTOM_RANGE_KEY, JSON.stringify(state))
 }
 
 function getState(): UnlockState {
@@ -67,36 +107,34 @@ function saveState(state: UnlockState) {
 }
 
 // Custom range management
-export function getCustomRange(): number {
-  const val = localStorage.getItem(CUSTOM_RANGE_KEY)
-  if (val === null) return DEFAULT_CUSTOM_RANGE
-  try {
-    const parsed = parseInt(val, 10)
-    return isNaN(parsed) || parsed < 1 ? DEFAULT_CUSTOM_RANGE : parsed
-  } catch {
-    return DEFAULT_CUSTOM_RANGE
-  }
+export function getCustomRange(operation: OperationType): number {
+  return getCustomRangeState()[operation]
 }
 
-export function setCustomRange(range: number) {
-  localStorage.setItem(CUSTOM_RANGE_KEY, String(range))
+export function setCustomRange(operation: OperationType, range: number) {
+  const state = getCustomRangeState()
+  state[operation] = Math.max(1, range)
+  saveCustomRangeState(state)
 }
 
-export function incrementCustomRange() {
-  const current = getCustomRange()
-  const newRange = current + 1
-  setCustomRange(newRange)
+export function incrementCustomRange(operation: OperationType): number {
+  const state = getCustomRangeState()
+  const newRange = state[operation] + 1
+  state[operation] = newRange
+  saveCustomRangeState(state)
   return newRange
 }
 
-export function resetCustomRange() {
-  setCustomRange(DEFAULT_CUSTOM_RANGE)
+export function resetCustomRange(operation: OperationType) {
+  const state = getCustomRangeState()
+  state[operation] = DEFAULT_CUSTOM_RANGE
+  saveCustomRangeState(state)
 }
 
 // Helper function to get the actual max number for a range
-export function getMaxNumberForRange(range: NumberRange): number {
+export function getMaxNumberForRange(operation: OperationType, range: NumberRange): number {
   if (range === 'custom') {
-    return getCustomRange()
+    return getCustomRange(operation)
   }
   return range
 }
@@ -128,7 +166,7 @@ export function unlockNextAiLevel(operation: OperationType, range: NumberRange, 
     
     // When beating Meister (level 4), increase the custom range and reset progress
     if (currentLevel >= 4) {
-      incrementCustomRange()
+      incrementCustomRange(operation)
       // Reset the custom range progress to Anfänger (level 1)
       opState[range] = 1
       // Clear performance data for the custom range with the new max number

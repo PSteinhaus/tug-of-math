@@ -72,7 +72,7 @@ const emit = defineEmits<{
   back: []
 }>()
 
-const currentCustomRange = ref(props.range === 'custom' ? getCustomRange() : 0)
+const currentCustomRange = ref(props.range === 'custom' ? getCustomRange(props.operation) : 0)
 const unlockedLevels = ref(1)
 const aiLevels = generateAiLevels(props.range, props.operation)
 
@@ -82,7 +82,7 @@ onMounted(() => {
   // Set up watcher for custom range changes
   if (props.range === 'custom') {
     const interval = setInterval(() => {
-      const newCustomRange = getCustomRange()
+      const newCustomRange = getCustomRange(props.operation)
       if (newCustomRange !== currentCustomRange.value) {
         currentCustomRange.value = newCustomRange
       }

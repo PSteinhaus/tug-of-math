@@ -24,7 +24,7 @@
         :mode="gameMode"
         :ai-level="aiLevel ?? undefined"
         :range="selectedRange"
-        :max-number="getMaxNumberForRange(selectedRange)"
+        :max-number="getMaxNumberForRange(selectedOperation, selectedRange)"
         :operation="selectedOperation"
         :p1-color="p1Color"
         :p1-dark="p1Dark"
