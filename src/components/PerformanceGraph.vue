@@ -111,11 +111,11 @@ function draw(progress = 1.0) {
   const graphHeight = bottom - top
 
   // Compute AI level info for y‑axis
-  const referenceLevel = props.range === 'custom' ? 4 : 5
+  const referenceLevel = props.range === 'custom' ? 3 : 5
   const gmLevel = aiLevel(referenceLevel, props.range, props.operation, props.customRangeValue)
   const gmTime = gmLevel.solveTime
 
-  const aiLevelCount = props.range === 'custom' ? 4 : 5
+  const aiLevelCount = props.range === 'custom' ? 3 : 5
   const levelInfos = Array.from({ length: aiLevelCount }, (_, i) => i + 1).map((lvl) => {
     const ai = aiLevel(lvl, props.range, props.operation, props.customRangeValue)
     return {
@@ -159,12 +159,13 @@ function draw(progress = 1.0) {
     rel: number
   ): string {
       const level = relToLevel(rel)
+      const maxLevel = props.range === 'custom' ? 3 : 5
 
       if (level <= 1)
           return difficultyColor(1)
 
-      if (level >= 5)
-          return difficultyColor(5)
+      if (level >= maxLevel)
+          return difficultyColor(maxLevel)
 
       const lower = Math.floor(level)
       const upper = Math.ceil(level)
@@ -184,7 +185,7 @@ function draw(progress = 1.0) {
 
   const userLevels = speedRaw.map(relToLevel)
 
-  const graphMaxLevel = props.range === 'custom' ? 4 : 5
+  const graphMaxLevel = props.range === 'custom' ? 3 : 5
   const minLevel = Math.min(1, ...userLevels)
   const maxLevelValue = Math.max(graphMaxLevel, ...userLevels)
 
@@ -257,7 +258,7 @@ function createDifficultyGradient(
     yBottom: number
 ) {
     const gradient = ctx.createLinearGradient(0, yTop, 0, yBottom)
-    const maxLevel = props.range === 'custom' ? 4 : 5
+    const maxLevel = props.range === 'custom' ? 3 : 5
 
     // Distribute color stops evenly across levels
     for (let level = maxLevel; level >= 1; level--) {
@@ -381,11 +382,11 @@ function drawSpeedSpline(
 
   // Find pixel y-positions of AI level boundaries
   const beginnerY = levelToPixel(1, minLevel, maxLevel, bottom, graphHeight)
-  const topLevel = props.range === 'custom' ? 4 : 5
+  const topLevel = props.range === 'custom' ? 3 : 5
   const grandmasterY = levelToPixel(topLevel, minLevel, maxLevel, bottom, graphHeight)
 
   // We'll draw three passes:
-  // 1. Segments above Großmeister   → solid purple
+  // 1. Segments above Meister   → solid purple
   // 2. Segments between levels       → gradient
   // 3. Segments below Anfänger       → solid green
 
@@ -407,8 +408,8 @@ function drawSpeedSpline(
     let color: string
 
     if (midPy <= grandmasterY) {
-      // Above Großmeister → solid purple
-      color = difficultyColor(5)
+      // Above Meister → solid purple
+      color = difficultyColor(topLevel)
     } else if (midPy >= beginnerY) {
       // Below Anfänger → solid green
       color = difficultyColor(1)

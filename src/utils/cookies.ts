@@ -158,14 +158,14 @@ export function unlockNextAiLevel(operation: OperationType, range: NumberRange, 
   
   // Handle custom range progression
   if (range === 'custom') {
-    // For custom range, max level is 4 (no Großmeister)
-    const customMaxLevel = 4
+    // For custom range, max level is 3
+    const customMaxLevel = 3
     if (currentLevel >= current && currentLevel < customMaxLevel) {
       opState[range] = Math.min(currentLevel + 1, customMaxLevel)
     }
     
-    // When beating Meister (level 4), increase the custom range and reset progress
-    if (currentLevel >= 4) {
+    // When beating Meister (level 3), increase the custom range and reset progress
+    if (currentLevel >= 3) {
       incrementCustomRange(operation)
       // Reset the custom range progress to Anfänger (level 1)
       opState[range] = 1

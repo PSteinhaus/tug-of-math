@@ -25,10 +25,9 @@ const AI_LEVEL_NAMES: string[] = [
   'Großmeister'
 ]
 
-// For custom ranges, we only have 4 levels (no Großmeister)
+// For custom ranges, we only have 3 levels
 const CUSTOM_AI_LEVEL_NAMES: string[] = [
   'Anfänger',
-  'Fortgeschritten',
   'Erfahren',
   'Meister'
 ]
@@ -72,7 +71,7 @@ export function aiLevel(level: number, numberRange: NumberRange, operation: Oper
   } else {
     config = getConfig(numberRange, operation)
   }
-  const maxLevel = numberRange === 'custom' ? 4 : 5
+  const maxLevel = numberRange === 'custom' ? 3 : 5
   return createAiLevel(level, maxLevel, config, numberRange)
 }
 
@@ -136,7 +135,15 @@ function createAiLevel(
   config: DifficultyConfig,
   numberRange: NumberRange | null = null
 ): AiLevel {
-  const t = powerCurve(level, maxLevel)
+  let t = powerCurve(level, maxLevel)
+  
+  // For custom ranges with 3 levels, remap t to only cover up to Meister
+  // (which is level 4 in the 5-level system, at t = powerCurve(4, 5))
+  if (maxLevel === 3) {
+    const meisterT = powerCurve(4, 5)
+    t = t * meisterT
+  }
+  
   let solveTime = lerp(
     config.slowSolveTime,
     config.fastSolveTime,
@@ -184,13 +191,6 @@ const AI_CONFIG: Record<
             easyAccuracy: 0.70,
             hardAccuracy: 0.97,
         },
-
-        custom: {
-            slowSolveTime: 15000,
-            fastSolveTime: 1800,
-            easyAccuracy: 0.85,
-            hardAccuracy: 1.00,
-        },
     },
 
     muldiv: {
@@ -212,13 +212,6 @@ const AI_CONFIG: Record<
             slowSolveTime: 22000,
             fastSolveTime: 2900,
             easyAccuracy: 0.77,
-            hardAccuracy: 0.99,
-        },
-
-        custom: {
-            slowSolveTime: 18000,
-            fastSolveTime: 2200,
-            easyAccuracy: 0.80,
             hardAccuracy: 0.99,
         },
     },
