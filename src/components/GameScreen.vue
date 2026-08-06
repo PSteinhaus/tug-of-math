@@ -81,7 +81,7 @@ import { playWin } from "../utils/sound"
 import { MatchStats, savePerformance } from '../utils/performance'
 
 const SHIFT_CORRECT = 12
-const SHIFT_WRONG   = 6
+const SHIFT_WRONG   = 10
 
 const props = defineProps<{
   mode: 'versus' | 'ai'
